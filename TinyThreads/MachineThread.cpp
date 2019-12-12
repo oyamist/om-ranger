@@ -5,23 +5,112 @@
 #include "version.h"
 #include "MachineThread.h"
 
-using namespace firestep;
+using namespace tinythreads;
 
-void MachineThread::setup(PinConfig pc) {
+void MachineThread::setup() {
     id = 'M';
-#ifdef THROTTLE_SPEED
-    ADC_LISTEN8(ANALOG_SPEED_PIN);
-#endif
     Thread::setup();
-    machine.setup(pc);
-    status = STATUS_BUSY_SETUP;
-    displayStatus();
+    //machine.setup(pc);
+    //status = STATUS_BUSY_SETUP;
+    //displayStatus();
 }
 
 MachineThread::MachineThread()
-    : status(STATUS_BUSY_SETUP), jsonController(machine), printBannerOnIdle(true) {
-    setController(jsonController);
+    //: status(STATUS_BUSY_SETUP), jsonController(machine), printBannerOnIdle(true) {
+    //setController(jsonController);
 }
+
+void MachineThread::loop() {
+		// TBD
+}
+
+#ifdef TBD
+void MachineThread::loop() {
+#ifdef THROTTLE_SPEED
+    if (fireduino::serial_available()) {
+        return;
+    }
+    pController->speed = ADCH;
+    if (pController->speed <= 251) {
+        ThreadEnable(false);
+        for (uint8_t iPause = pController->speed; iPause <= 247; iPause++) {
+            for (uint8_t iIdle = 0; iIdle < 10; iIdle++) {
+                DELAY500NS;
+                DELAY500NS;
+            }
+        }
+        ThreadEnable(true);
+    }
+#endif
+
+    switch (status) {
+    default:
+    case STATUS_WAIT_IDLE:
+    case STATUS_WAIT_CAMERA:
+    case STATUS_WAIT_OPERATOR:
+    case STATUS_WAIT_MOVING:
+    case STATUS_WAIT_BUSY:
+    case STATUS_WAIT_CANCELLED:
+        if (fireduino::serial_available()) {
+            command.clear();
+            status = command.parse(NULL, status);
+        } else {
+            status = machine.idle(status);
+        }
+        break;
+    case STATUS_WAIT_EOL:
+        if (fireduino::serial_available()) {
+            status = command.parse(NULL, status);
+        }
+        break;
+    case STATUS_BUSY_PARSED:
+    case STATUS_BUSY_OK:
+    case STATUS_BUSY:
+    case STATUS_BUSY_CALIBRATING:
+    case STATUS_BUSY_MOVING:
+        if (fireduino::serial_available()) {
+            status = pController->cancel(command, STATUS_SERIAL_CANCEL);
+        } else {
+            status = process(command);
+            //TESTCOUT1("pController->process status:", status);
+        }
+        break;
+    case STATUS_BUSY_EEPROM:
+        status = executeEEPROM();
+        break;
+    case STATUS_BUSY_SETUP: {
+        uint8_t c = fireduino::eeprom_read_byte((uint8_t*) 0);
+        if (c == '{' || c == '[') {
+            status = STATUS_BUSY_EEPROM;
+        } else {
+			machine.syncHash = machine.hash();
+            command.clear();
+            status = command.parse("{\"id\":\"\"}", status);
+        }
+        break;
+    }
+    case STATUS_OK:
+        status = STATUS_WAIT_IDLE;
+        if (machine.syncHash != machine.hash()) {
+            if (machine.autoSync) {
+                TESTCOUT2("STATUS_OK autoSync syncHash:", machine.syncHash, " hash:", machine.hash());
+                status = syncConfig();
+            } else {
+                TESTCOUT2("STATUS_OK syncHash:", machine.syncHash, " hash:", machine.hash());
+            }
+            if (machine.syncHash != 0 && machine.isEEUserEnabled()) {
+                TESTCOUT1("STATUS_OK user EEPROM:", "disabled");
+                machine.enableEEUser(false);
+            }
+        }
+        break;
+    }
+
+    displayStatus();
+
+    nextLoop.ticks = 0; // Highest priority
+}
+
 
 void MachineThread::setController(JsonController &controller) {
     this->pController = &controller;
@@ -205,92 +294,6 @@ Status MachineThread::syncConfig() {
     return status;
 }
 
-void MachineThread::loop() {
-#ifdef THROTTLE_SPEED
-    if (fireduino::serial_available()) {
-        return;
-    }
-    pController->speed = ADCH;
-    if (pController->speed <= 251) {
-        ThreadEnable(false);
-        for (uint8_t iPause = pController->speed; iPause <= 247; iPause++) {
-            for (uint8_t iIdle = 0; iIdle < 10; iIdle++) {
-                DELAY500NS;
-                DELAY500NS;
-            }
-        }
-        ThreadEnable(true);
-    }
-#endif
-
-    switch (status) {
-    default:
-    case STATUS_WAIT_IDLE:
-    case STATUS_WAIT_CAMERA:
-    case STATUS_WAIT_OPERATOR:
-    case STATUS_WAIT_MOVING:
-    case STATUS_WAIT_BUSY:
-    case STATUS_WAIT_CANCELLED:
-        if (fireduino::serial_available()) {
-            command.clear();
-            status = command.parse(NULL, status);
-        } else {
-            status = machine.idle(status);
-        }
-        break;
-    case STATUS_WAIT_EOL:
-        if (fireduino::serial_available()) {
-            status = command.parse(NULL, status);
-        }
-        break;
-    case STATUS_BUSY_PARSED:
-    case STATUS_BUSY_OK:
-    case STATUS_BUSY:
-    case STATUS_BUSY_CALIBRATING:
-    case STATUS_BUSY_MOVING:
-        if (fireduino::serial_available()) {
-            status = pController->cancel(command, STATUS_SERIAL_CANCEL);
-        } else {
-            status = process(command);
-            //TESTCOUT1("pController->process status:", status);
-        }
-        break;
-    case STATUS_BUSY_EEPROM:
-        status = executeEEPROM();
-        break;
-    case STATUS_BUSY_SETUP: {
-        uint8_t c = fireduino::eeprom_read_byte((uint8_t*) 0);
-        if (c == '{' || c == '[') {
-            status = STATUS_BUSY_EEPROM;
-        } else {
-			machine.syncHash = machine.hash();
-            command.clear();
-            status = command.parse("{\"id\":\"\"}", status);
-        }
-        break;
-    }
-    case STATUS_OK:
-        status = STATUS_WAIT_IDLE;
-        if (machine.syncHash != machine.hash()) {
-            if (machine.autoSync) {
-                TESTCOUT2("STATUS_OK autoSync syncHash:", machine.syncHash, " hash:", machine.hash());
-                status = syncConfig();
-            } else {
-                TESTCOUT2("STATUS_OK syncHash:", machine.syncHash, " hash:", machine.hash());
-            }
-            if (machine.syncHash != 0 && machine.isEEUserEnabled()) {
-                TESTCOUT1("STATUS_OK user EEPROM:", "disabled");
-                machine.enableEEUser(false);
-            }
-        }
-        break;
-    }
-
-    displayStatus();
-
-    nextLoop.ticks = 0; // Highest priority
-}
-
 Status MachineThread::process(JsonCommand& jcmd) {
     Status status = STATUS_OK;
     JsonVariant &jroot = jcmd.requestRoot();
@@ -332,3 +335,4 @@ Status MachineThread::process(JsonCommand& jcmd) {
     return status;
 }
 
+#endif // TBD

@@ -7,7 +7,7 @@
 #include "JsonController.h"
 #include "ProcessField.h"
 #include "ProgMem.h"
-#include "git_tag.h"
+//#include "git_tag.h"
 
 using namespace firestep;
 
@@ -429,4 +429,3 @@ Status JsonController::processObj(JsonCommand& jcmd, JsonObject&jobj) {
     //TESTCOUT1("processObj:", "out");
     return status;
 }
-

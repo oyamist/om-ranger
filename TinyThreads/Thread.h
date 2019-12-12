@@ -5,7 +5,7 @@
 extern uint32_t fireduino_timer;
 extern void fireduino_timer_handler();
 
-namespace firestep {
+namespace tinythreads {
 
 extern int16_t leastFreeRam;
 
@@ -208,6 +208,6 @@ extern ThreadRunner threadRunner;
 
 extern Ticks ticks();
 
-} // namespace firestep
+} // namespace tinythreads
 
 #endif

@@ -1,17 +1,27 @@
-WARNING: YOU ARE TRYING TO USE THE GITHUB FIRESTEP.INO IN YOUR ARDUINO IDE
+#include <Arduino.h>
+//#include "MachineThread.h"
 
-The Arduino IDE file structure requirements are byzantine and quirky.
-As a result, Arduino file structure does not match industry project standards 
-for folder organization of C/C++ code. The GitHub TinyThreads repository
-is structured for cross-platform compilation and cannot be used directly
-inside the Arduino IDE.
+///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
-To address this, you will need an official TinyThreads release:
-https://github.com/firepick1/TinyThreads/releases
+tinythreads::MachineThread machineThread; // TinyThreads command interpreter
 
-Each release has a downloadable zip file that looks something like this:
-`TinyThreads-f41d3628f0292d8f4b3994af28c510e9fcb3360c.zip`
 
-Download the desired TinyThreads release zip file to your computer and
-follow the TinyThreads wiki installation instructions:
-https://github.com/firepick1/TinyThreads/wiki#installation
+void setup() { // run once, when the sketch starts
+    // Serial I/O has lowest priority, so you may need to
+    // decrease baud rate to fix Serial I/O problems.
+    //Serial.begin(38400); // short USB cables
+    Serial.begin(19200); // long USB cables
+
+    // Initialize
+		// machineThread.setup();
+  pinMode(LED_BUILTIN, OUTPUT);
+  #ifdef ARDUINO_SAMD_ZERO
+  digitalWrite(LED_BUILTIN, 1);
+  #endif
+
+//    tinythreads::threadRunner.setup(LED_PIN);
+}
+
+void loop() {	// run over and over again
+ //   tinythreads::threadRunner.run();
+}

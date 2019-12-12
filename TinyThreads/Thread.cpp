@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Thread.h"
 
-using namespace firestep;
+using namespace tinythreads;
 
 #define MAX_THREADS 32
 
@@ -12,7 +12,7 @@ void fireduino_timer_handler() {
 }
 
 
-namespace firestep {
+namespace tinythreads {
 ThreadClock 	threadClock;
 ThreadRunner 	threadRunner;
 struct Thread *	pThreadList;
@@ -136,9 +136,9 @@ void MonitorThread::loop() {
 #endif
 }
 
-MonitorThread firestep::monitor;
+MonitorThread tinythreads::monitor;
 
-void firestep::Error(const char *msg, int value) {
+void tinythreads::Error(const char *msg, int value) {
     monitor.Error(msg, value);
 }
 
@@ -181,7 +181,7 @@ void ThreadRunner::resetGenerations() {
     }
 }
 
-void firestep::ThreadEnable(bool enable) {
+void tinythreads::ThreadEnable(bool enable) {
 #ifdef DEBUG_ThreadENABLE
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         fireduino::serial_print(pThread->id);
@@ -193,7 +193,7 @@ void firestep::ThreadEnable(bool enable) {
 	fireduino::enable_timer64us(enable);
 }
 
-firestep::Ticks firestep::ticks() {
+tinythreads::Ticks tinythreads::ticks() {
 #if defined(TEST)
     arduino.timer64us(1);
 #endif

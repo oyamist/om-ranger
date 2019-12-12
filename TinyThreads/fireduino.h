@@ -1,6 +1,7 @@
 #ifndef FIREDUINO_H
 #define FIREDUINO_H
 
+#define NOPIN -1
 #define minval(a,b) ((a)<(b)?(a):(b))
 #define maxval(a,b) ((a)>(b)?(a):(b))
 #define absval(x) ((x)>0?(x):-(x))
@@ -20,12 +21,6 @@ extern void fireduino_timer_handler();
 #include "MockDuino.h"
 #elif defined( ARDUINO_SAMD_ZERO )
 #include "fireduino_tinyzero.h"
-#elif defined( __AVR_ATmega2560__)
-#include "fireduino_mega2560.h"
-#elif defined(_SAM3XA_)
-#include "fireduino_due.h"
-#elif defined(__USE_LPCOPEN)
-#include "fireduino_lpc17xx_40xx.h"
 #else
 #define NO_MCU
 namespace fireduino { // abstract API implementable any way you like

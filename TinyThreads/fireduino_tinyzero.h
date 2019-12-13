@@ -7,25 +7,25 @@ extern int __heap_start, *__brkval;
 
 namespace fireduino {
 	inline Print& get_Print() {
-		return Serial;
+		return SerialUSB;
 	}
 	inline int16_t serial_read() {
-		return Serial.read();
+		return SerialUSB.read();
 	}
 	inline int16_t serial_available() {
-		return Serial.available();
+		return SerialUSB.available();
 	}
 	inline void serial_begin(int32_t baud) {
-		Serial.begin(baud);
+		SerialUSB.begin(baud);
 	}
 	inline void serial_print(const char *value) {
-		Serial.print(value);
+		SerialUSB.print(value);
 	}
 	inline void serial_print(const char value) {
-		Serial.print(value);
+		SerialUSB.print(value);
 	}
 	inline void serial_print(int16_t value, int16_t format = DEC) {
-		Serial.print(value, format);
+		SerialUSB.print(value, format);
 	}
 	inline void pinMode(int16_t pin, int16_t inout) {
 		::pinMode(pin, inout);

@@ -1,27 +1,33 @@
 #include <Arduino.h>
-//#include "MachineThread.h"
+#include <Wire.h>         // For I2C communication with sensor
+#include <Wireling.h>               // For interfacing with Wirelings
+#include "MachineThread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
-tinythreads::MachineThread machineThread; // TinyThreads command interpreter
+using namespace tinythreads;
+
+MachineThread machineThread; // TinyThreads command interpreter
 
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
     // decrease baud rate to fix Serial I/O problems.
-    //Serial.begin(38400); // short USB cables
-    Serial.begin(19200); // long USB cables
+    //SerialUSB.begin(38400); // short USB cables
+    SerialUSB.begin(19200); // long USB cables
+    SerialUSB.println("TinyThreads.setup()");
+    
+  Wire.begin();
+//  Wireling.begin();
+//  Wireling.selectPort(3);  // This port# matches the one labeled on the adapter board
 
     // Initialize
-		// machineThread.setup();
-  pinMode(LED_BUILTIN, OUTPUT);
-  #ifdef ARDUINO_SAMD_ZERO
-  digitalWrite(LED_BUILTIN, 1);
-  #endif
-
-//    tinythreads::threadRunner.setup(LED_PIN);
+	  machineThread.setup();
+    pinMode(LED_BUILTIN, OUTPUT);
+    SerialUSB.println("threadRunner.setup");
+    threadRunner.setup(LED_BUILTIN);
 }
 
 void loop() {	// run over and over again
- //   tinythreads::threadRunner.run();
+    threadRunner.run();
 }

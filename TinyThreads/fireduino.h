@@ -87,5 +87,6 @@ namespace fireduino {
 #define DEBUG_DEC(S,V) fireduino::serial_print(" " S ":");fireduino::serial_print(V,DEC);
 
 #define TICKS_PER_SECOND ((int32_t)1000)
+#define MS_TICKS(t) t
 
 #endif

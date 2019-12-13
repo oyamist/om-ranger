@@ -15,7 +15,7 @@ extern int16_t leastFreeRam;
  */
 typedef uint32_t Ticks;
 
-typedef class ThreadClock  {
+typedef struct ThreadClock  {
     Ticks ticks;
     ThreadClock() : ticks(0) {}
 } ThreadClock, *ThreadClockPtr;

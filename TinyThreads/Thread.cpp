@@ -68,6 +68,7 @@ void MonitorThread::setup(int pinLED) {
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     this->pinLED = pinLED;
     verbose = false;
+    fireduino::serial_println("MonitorThread::setup()");
     if (pinLED != NOPIN) {
         fireduino::pinMode(pinLED, OUTPUT);
     }

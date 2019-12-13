@@ -11,9 +11,7 @@ void fireduino_timer_handler() {
 	fireduino_timer++;
 }
 
-
 namespace tinythreads {
-ThreadClock 	threadClock;
 ThreadRunner 	threadRunner;
 struct Thread *	pThreadList;
 int 			nThreads;
@@ -58,9 +56,9 @@ void PulseThread::setup(Ticks period, Ticks pulseWidth) {
 void PulseThread::loop() {
     isHigh = !isHigh;
     if (isHigh) {
-        nextLoop.ticks = threadClock.ticks + m_HighPeriod;
+        nextLoop.ticks = ticks() + m_HighPeriod;
     } else {
-        nextLoop.ticks = threadClock.ticks + m_LowPeriod;
+        nextLoop.ticks = ticks() + m_LowPeriod;
     }
 }
 
@@ -117,15 +115,6 @@ void MonitorThread::loop() {
         LED(HIGH);
         verbose = true;
     }
-    for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        if (threadClock.generation > pThread->nextLoop.generation + 1 &&
-                pThread->nextLoop.generation > 0) {
-            //cout << "ticks:" << threadClock.ticks
-            //<< " nextLoop:" << pThread->nextLoop.ticks
-            //<< " pThread:" << pThread->id << endl;
-            Error("O@G", pThread->nextLoop.generation);
-        }
-    }
     if (isHigh) {
         if (verbose) {
             fireduino::serial_print(".");
@@ -148,37 +137,17 @@ ThreadRunner::ThreadRunner() {
 
 void ThreadRunner::clear() {
     pThreadList = NULL;
-    threadClock.ticks = 0;
     nThreads = 0;
     nLoops = 0;
     nTardies = 0;
-    generation = threadClock.generation;
-    lastAge = 0;
-    age = 0;
     nHB = 0;
     testTardies = 0;
     fast = 255;
-	fireduino::clear_timer64us();
 }
 
 void ThreadRunner::setup(int pinLED) {
     monitor.setup(pinLED);
-
-	fireduino::setup_timer64us();
-    lastAge = 0;
     ThreadEnable(true);
-}
-
-/**
- * The generation count has exceeded the maximum.
- * Give the machine a rest and power-cycle it.
- */
-void ThreadRunner::resetGenerations() {
-    threadClock.ticks = 0;
-    lastAge = 0;
-    for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        pThread->nextLoop.ticks = 0;
-    }
 }
 
 void tinythreads::ThreadEnable(bool enable) {
@@ -190,7 +159,6 @@ void tinythreads::ThreadEnable(bool enable) {
         fireduino::serial_print(" ");
     }
 #endif
-	fireduino::enable_timer64us(enable);
 }
 
 tinythreads::Ticks tinythreads::ticks() {

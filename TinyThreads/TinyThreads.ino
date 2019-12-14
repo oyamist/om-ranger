@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>         // For I2C communication with sensor
 #include <Wireling.h>               // For interfacing with Wirelings
-#include "MachineThread.h"
+#include "Accel3Thread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
 using namespace tinythreads;
 
-MachineThread machineThread; // TinyThreads command interpreter
+Accel3Thread machineThread; // TinyThreads command interpreter
 
 
 void setup() { // run once, when the sketch starts

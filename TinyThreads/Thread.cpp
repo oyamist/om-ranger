@@ -5,21 +5,14 @@ using namespace tinythreads;
 
 #define MAX_THREADS 32
 
-uint32_t fireduino_timer = 0;
-
-void fireduino_timer_handler() {
-	fireduino_timer++;
-}
-
 namespace tinythreads {
-ThreadRunner 	threadRunner;
-struct Thread *	pThreadList;
-int 			nThreads;
-int32_t 		nLoops;
-int32_t 		nTardies;
-int16_t			leastFreeRam = 32767;
+    ThreadRunner 	threadRunner;
+    struct Thread *	pThreadList;
+    int 			nThreads;
+    int32_t 		nLoops;
+    int32_t 		nTardies;
+    int16_t			leastFreeRam = 32767;
 };
-
 
 void Thread::setup() {
     bool active = false;

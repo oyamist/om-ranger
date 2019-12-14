@@ -5,16 +5,14 @@
 
 namespace tinythreads {
 
-typedef class MachineThread : Thread {
-protected:
-
+typedef class Accel3Thread : Thread {
 public:
-
-public:
-    MachineThread();
+    Accel3Thread();
     void setup();
     void loop();
-} MachineThread;
+
+protected:
+} Accel3Thread;
 
 } // namespace tinythreads
 

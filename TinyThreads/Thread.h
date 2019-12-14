@@ -53,7 +53,7 @@ protected:
 
 typedef class MonitorThread : PulseThread {
     friend class ThreadRunner;
-    friend class MachineThread;
+    friend class Accel3Thread;
 
 private:
     uint8_t	blinkLED;

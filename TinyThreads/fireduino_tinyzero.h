@@ -24,10 +24,16 @@ namespace fireduino {
 	inline void serial_print(const char value) {
 		SerialUSB.print(value);
 	}
-	inline void serial_print(int16_t value, int16_t format = DEC) {
-		SerialUSB.print(value, format);
-	}
-	inline void pinMode(int16_t pin, int16_t inout) {
+  inline void serial_print(int16_t value, int16_t format = DEC) {
+    SerialUSB.print(value, format);
+  }
+  inline void serial_print(uint8_t value, int16_t format = DEC) {
+    SerialUSB.print(value, format);
+  }
+  inline void serial_print(double value, int16_t format = 3) {
+    SerialUSB.print(value, format);
+  }
+  inline void pinMode(int16_t pin, int16_t inout) {
 		::pinMode(pin, inout);
 	}
 	inline int16_t digitalRead(int16_t pin) {

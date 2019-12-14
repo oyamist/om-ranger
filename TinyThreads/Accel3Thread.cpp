@@ -12,7 +12,7 @@ using namespace fireduino;
 BMA250 accel_sensor;
 
 typedef struct XYZ {
-    int x, y, z;
+    int16_t x, y, z;
     void set(int x, int y, int z) {
         this->x = x;
         this->y = y;
@@ -33,12 +33,12 @@ typedef struct XYZ {
 
 #define SAMPLES 10
 XYZ xyz[SAMPLES];
-int iSample = 0;
-float kHighLow = 0.032;
-float kAvg = 0.05;
-float aHigh = 0;
-float aLow = 0;
-float aAvg = 0;
+int iSample = 1;
+double kHighLow = 0.032;
+double kAvg = 0.05;
+double aHigh = 0;
+double aLow = 0;
+double aAvg = 0;
 
 Accel3Thread::Accel3Thread(){
 }
@@ -78,13 +78,15 @@ void Accel3Thread::loop() {
     if (x == -1 && y == -1 && z == -1) {
         serial_print("ERROR! NO BMA250 DETECTED!");
     } else { 
-        if (iSample === 0) {
+        //if (iSample == 0) { serial_print("hello");}
+        if (iSample == 1) {
             serial_print("  avg:");
-            serial_print(aAvg);
+            serial_print(aAvg, 3);
             serial_print("  high:");
-            serial_print(aHigh);
+            serial_print(aHigh, 3);
             serial_print("  low:");
-            serial_println(aLow);
+            serial_print(aLow, 3);
+            serial_println();
         }
         //printSamples();
     }

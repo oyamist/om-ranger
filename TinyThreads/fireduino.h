@@ -30,6 +30,8 @@ namespace fireduino { // abstract API implementable any way you like
 	void serial_print(const char *value);
 	void serial_print(const char value);
 	void serial_print(int16_t value, int16_t format = DEC);
+  void serial_print(uint8_t value, int16_t format = DEC);
+  void serial_print(double value, int16_t places = 3);
 	void pinMode(int16_t pin, int16_t inout);
 	int16_t digitalRead(int16_t pin);
 	void digitalWrite(int16_t dirPin, int16_t value);

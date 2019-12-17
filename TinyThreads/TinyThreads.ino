@@ -2,13 +2,14 @@
 #include <Wire.h>         // For I2C communication with sensor
 #include <Wireling.h>               // For interfacing with Wirelings
 #include "Accel3Thread.h"
+#include "LraThread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
 using namespace tinythreads;
 
-Accel3Thread machineThread; // TinyThreads command interpreter
-
+Accel3Thread accelThread; // Acceleromoter tracker
+LraThread lraThread; // Haptic feedback
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -22,7 +23,8 @@ void setup() { // run once, when the sketch starts
 //  Wireling.selectPort(3);  // This port# matches the one labeled on the adapter board
 
     // Initialize
-	  machineThread.setup();
+	  accelThread.setup();
+    lraThread.setup();
     pinMode(LED_BUILTIN, OUTPUT);
     SerialUSB.println("threadRunner.setup");
     threadRunner.setup(LED_BUILTIN);

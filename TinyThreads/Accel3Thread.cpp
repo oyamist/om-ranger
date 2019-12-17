@@ -45,14 +45,6 @@ void Accel3Thread::setup() {
     serial_print("Accel3Thread.setup");
 }
 
-void printSamples() {
-    if (iSample == 0) {
-        for (int i = 0; i<SAMPLES;i++) {
-          xyz[i].print();
-        }
-    }
-}
-
 void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
     if (v <= 25) { 
         serial_print(s1);
@@ -99,6 +91,5 @@ void Accel3Thread::loop() {
             serial_print((int16_t)(xyz[iSample].x-curXYZ.x));
             serial_print("\n");
         }
-        //printSamples();
     }
 }

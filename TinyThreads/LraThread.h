@@ -1,18 +1,18 @@
-#ifndef ACCEL3_THREAD_H
-#define ACCEL3_THREAD_H
+#ifndef LRA_THREAD_H
+#define LRA_THREAD_H
 
 #include "Thread.h"
 
 namespace tinythreads {
 
-typedef class Accel3Thread : Thread {
+typedef class LraThread : Thread {
 public:
-    Accel3Thread();
+    LraThread();
     void setup();
     void loop();
 
 protected:
-} Accel3Thread;
+} LraThread;
 
 } // namespace tinythreads
 

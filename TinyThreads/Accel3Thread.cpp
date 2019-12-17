@@ -12,7 +12,7 @@ using namespace fireduino;
 BMA250 accel_sensor;
 
 typedef struct XYZ {
-    int16_t x, y, z;
+    int16_t x=0, y=0, z=0;
     void set(int x, int y, int z) {
         this->x = x;
         this->y = y;
@@ -33,17 +33,7 @@ typedef struct XYZ {
 
 #define SAMPLES 32
 XYZ xyz[SAMPLES];
-<<<<<<< HEAD
-int iSample = 1;
-double kHighLow = 0.032;
-double kAvg = 0.05;
-double aHigh = 0;
-double aLow = 0;
-double aAvg = 0;
-=======
-XYZ rank;
 int iSample = 0;
->>>>>>> e1066d5d25d2d4fa7f0fec6e2cd14efc686889b2
 
 Accel3Thread::Accel3Thread(){
 }
@@ -63,7 +53,7 @@ void printSamples() {
     }
 }
 
-rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
+void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
     if (v <= 25) { 
         serial_print(s1);
     } else if (v <= 50) { 
@@ -81,6 +71,10 @@ void Accel3Thread::loop() {
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
     int z = accel_sensor.Z;
+    XYZ low;
+    XYZ high;
+    XYZ rank;
+    XYZ curXYZ = xyz[iSample];
     rank.set(0,0,0);
     for (int i = 0; i < SAMPLES; i++) {
         if (x >= xyz[i].x) { rank.x++; }
@@ -90,31 +84,20 @@ void Accel3Thread::loop() {
     rank.x = (100*rank.x)/SAMPLES;
     rank.y = (100*rank.y)/SAMPLES;
     rank.z = (100*rank.z)/SAMPLES;
-
-    xyz[iSample].set(x,y,z);
     iSample = (iSample+1) % SAMPLES;
+    xyz[iSample].set(x,y,z);
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {
         serial_print("ERROR! NO BMA250 DETECTED!");
     } else { 
-<<<<<<< HEAD
-        //if (iSample == 0) { serial_print("hello");}
-        if (iSample == 1) {
-            serial_print("  avg:");
-            serial_print(aAvg, 3);
-            serial_print("  high:");
-            serial_print(aHigh, 3);
-            serial_print("  low:");
-            serial_print(aLow, 3);
-            serial_println();
-=======
-        if ((iSample % 10) === 0) {
+        if ((iSample % 10) == 0) {
             rankPrint(rank.x, " X---", " -X--", " --X-", " ---X");
             rankPrint(rank.y, " Y---", " -Y--", " --Y-", " ---Y");
             rankPrint(rank.z, " Z---", " -Z--", " --Z-", " ---Z");
-            serial.println("\n");
->>>>>>> e1066d5d25d2d4fa7f0fec6e2cd14efc686889b2
+            serial_print(" ");
+            serial_print((int16_t)(xyz[iSample].x-curXYZ.x));
+            serial_print("\n");
         }
         //printSamples();
     }

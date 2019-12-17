@@ -31,14 +31,10 @@ typedef struct XYZ {
     }
 } XYZ;
 
-#define SAMPLES 10
+#define SAMPLES 32
 XYZ xyz[SAMPLES];
+XYZ rank;
 int iSample = 0;
-float kHighLow = 0.032;
-float kAvg = 0.05;
-float aHigh = 0;
-float aLow = 0;
-float aAvg = 0;
 
 Accel3Thread::Accel3Thread(){
 }
@@ -58,33 +54,46 @@ void printSamples() {
     }
 }
 
+rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
+    if (v <= 25) { 
+        serial_print(s1);
+    } else if (v <= 50) { 
+        serial_print(s2);
+    } else if (v <= 75) { 
+        serial_print(s3);
+    } else {
+        serial_print(s4);
+    }
+}
+
 void Accel3Thread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(32);
     accel_sensor.read();
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
     int z = accel_sensor.Z;
+    rank.set(0,0,0);
+    for (int i = 0; i < SAMPLES; i++) {
+        if (x >= xyz[i].x) { rank.x++; }
+        if (y >= xyz[i].y) { rank.y++; }
+        if (z >= xyz[i].z) { rank.z++; }
+    }
+    rank.x = (100*rank.x)/SAMPLES;
+    rank.y = (100*rank.y)/SAMPLES;
+    rank.z = (100*rank.z)/SAMPLES;
+
     xyz[iSample].set(x,y,z);
     iSample = (iSample+1) % SAMPLES;
-
-    if (x > aAvg) {
-        aHigh = kHighLow * x + (1-kHighLow)*aHigh;
-    } else {
-        aLow = kHighLow * x + (1-kHighLow)*aLow;
-    }
-    aAvg = kAvg * (aHigh+aLow)/2 + (1-kAvg)*aAvg;
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {
         serial_print("ERROR! NO BMA250 DETECTED!");
     } else { 
-        if (iSample === 0) {
-            serial_print("  avg:");
-            serial_print(aAvg);
-            serial_print("  high:");
-            serial_print(aHigh);
-            serial_print("  low:");
-            serial_println(aLow);
+        if ((iSample % 10) === 0) {
+            rankPrint(rank.x, " X---", " -X--", " --X-", " ---X");
+            rankPrint(rank.y, " Y---", " -Y--", " --Y-", " ---Y");
+            rankPrint(rank.z, " Z---", " -Z--", " --Z-", " ---Z");
+            serial.println("\n");
         }
         //printSamples();
     }

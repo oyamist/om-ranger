@@ -17,14 +17,13 @@ typedef uint32_t Ticks;
 
 typedef struct ThreadClock  {
     Ticks ticks;
-    ThreadClock() : ticks(0) {}
+    uint16_t loops;
+    ThreadClock() : ticks(0), loops(0) {}
 } ThreadClock, *ThreadClockPtr;
 
 typedef struct Thread {
 public:
-    Thread() : pNext(NULL), tardies(0), id(0) {
-        nextLoop.ticks = 0;
-    }
+    Thread() : pNext(NULL), tardies(0), id(0) {}
     virtual void setup();
     virtual void loop() {}
 
@@ -124,6 +123,7 @@ public:
                 continue; // not time yet for scheduled reactivation
             }
 
+            pThread->nextClock.loops++;
             pThread->loop();	// reactivate thread
             nHB++;
 

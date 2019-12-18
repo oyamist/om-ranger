@@ -18,7 +18,7 @@
 #define NO_MCU
 #include "MockDuino.h"
 #elif defined( ARDUINO_SAMD_ZERO )
-#include "fireduino_tinyzero.h"
+#include "TinyZero.h"
 #else
 #define NO_MCU
 namespace fireduino { // abstract API implementable any way you like
@@ -60,8 +60,6 @@ namespace fireduino {
 	}
 }
 
-
-#include "pins.h"
 
 #ifdef TEST
 #define TESTCOUT1(k,v) cout << k << v << endl

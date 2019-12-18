@@ -17,14 +17,6 @@ LraThread lraThread; // Haptic feedback
 Adafruit_DRV2605 drv;   // The variable used to interface with the DRV2605 chip
 const int powerPin = 4;  // Power to Wireling
 
-// **Wireling boards attached through an Adapter board**
-// Selects the correct address of the port being used in the Adapter board
-void setWirelingPort(int port) {
-  Wire.beginTransmission(0x70);
-  Wire.write(0x04 + port);
-  Wire.endTransmission();
-}
-
 LraThread::LraThread(uint16_t msPeriod, uint8_t port)
     : msPeriod(msPeriod), level(0), effect(0), count(0), port(port)
 {}
@@ -65,7 +57,7 @@ void LraThread::playWaveform() {
 void LraThread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
 
-    setWirelingPort(port); // Tiny Adapter port
+    wireling::setPort(port); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);

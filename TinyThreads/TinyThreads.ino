@@ -3,6 +3,7 @@
 #include <Wireling.h>               // For interfacing with Wirelings
 #include "Accel3Thread.h"
 #include "LraThread.h"
+#include "RangeThread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 

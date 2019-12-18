@@ -51,9 +51,10 @@ namespace tinythreads {
 
 typedef class LraThread : Thread {
 public:
-    LraThread(uint16_t msPeriod=50);
+    LraThread(uint16_t msPeriod=50, uint8_t port=1);
     void buzz(uint8_t level);
     void setEffect(uint8_t effect, uint8_t count=1);
+    void setup();
 
 protected:
     uint8_t port;
@@ -63,7 +64,6 @@ protected:
     uint16_t msPeriod;
     uint8_t effect;
     void playWaveform();
-    void setup();
     void loop();
 } LraThread;
 

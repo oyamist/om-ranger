@@ -2,20 +2,17 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
+#include <Wire.h>
+#include "Accel3Thread.h"
+#include "LraThread.h"
 #include "RangeThread.h"
 
 using namespace tinythreads;
 using namespace fireduino;
 
-RangeThread rangeThread;
+namespace tinythreads {
 
-// **Wireling boards attached through an Adapter board**
-// Selects the correct address of the port being used in the Adapter board
-void setWirelingPort(int port) {
-  Wire.beginTransmission(0x70);
-  Wire.write(0x04 + port);
-  Wire.endTransmission();
-}
+RangeThread rangeThread;
 
 RangeThread::RangeThread(uint16_t msPeriod, uint8_t port)
     : msPeriod(msPeriod), port(port)
@@ -44,3 +41,5 @@ void RangeThread::loop() {
             break;
     }
 }
+
+} // tinythreads

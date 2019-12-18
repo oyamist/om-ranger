@@ -10,7 +10,7 @@
 using namespace tinythreads;
 using namespace fireduino;
 
-friend class Thread;
+namespace tinythreads {
 
 LraThread lraThread; // Haptic feedback
 
@@ -67,3 +67,5 @@ void LraThread::loop() {
         playWaveform();
     }
 }
+
+} // tinythreads

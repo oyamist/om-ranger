@@ -8,35 +8,16 @@
 using namespace tinythreads;
 using namespace fireduino;
 
+Accel3Thread accelThread; // Acceleromoter tracker
+
 // Accelerometer sensor variables for the sensor and its values
 BMA250 accel_sensor;
 
-typedef struct XYZ {
-    int16_t x=0, y=0, z=0;
-    void set(int x, int y, int z) {
-        this->x = x;
-        this->y = y;
-        this->z = z;
-    }
-    void print() {
-        serial_print("{x:");
-        serial_print(this->x);
-
-        serial_print(",y:");
-        serial_print(this->y);
-
-        serial_print(",z:");
-        serial_print(this->z);
-        serial_println("}");
-    }
-} XYZ;
-
 #define SAMPLES 32
-XYZ xyz[SAMPLES];
-int iSample = 0;
 
-Accel3Thread::Accel3Thread(){
-}
+Accel3Thread::Accel3Thread(uint16_t msPeriod)
+    : msPeriod(msPeriod)
+{}
 
 void Accel3Thread::setup() {
     id = 'M';
@@ -57,18 +38,36 @@ void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
     }
 }
 
+int8_t headingFromRank(int16_t rank) {
+    if (rank <= 25) {
+        return -2;
+    } else if (rank <= 50) {
+        return -1;
+    } else if (rank <= 75) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
 void Accel3Thread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(32);
+    nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
     accel_sensor.read();
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
     int z = accel_sensor.Z;
-    XYZ low;
-    XYZ high;
     XYZ rank;
     XYZ curXYZ = xyz[iSample];
+    XYZ minXYZ(curXYZ);
+    XYZ maxXYZ(curXYZ);
     rank.set(0,0,0);
     for (int i = 0; i < SAMPLES; i++) {
+        if (x < minXYZ.x) { minXYZ.x = x; }
+        if (y < minXYZ.y) { minXYZ.y = y; }
+        if (z < minXYZ.z) { minXYZ.z = z; }
+        if (x > maxXYZ.x) { maxXYZ.x = x; }
+        if (y > maxXYZ.y) { maxXYZ.y = y; }
+        if (z > maxXYZ.z) { maxXYZ.z = z; }
         if (x >= xyz[i].x) { rank.x++; }
         if (y >= xyz[i].y) { rank.y++; }
         if (z >= xyz[i].z) { rank.z++; }
@@ -78,6 +77,9 @@ void Accel3Thread::loop() {
     rank.z = (100*rank.z)/SAMPLES;
     iSample = (iSample+1) % SAMPLES;
     xyz[iSample].set(x,y,z);
+    heading.x = headingFromRank(rank.x);
+    heading.y = headingFromRank(rank.y);
+    heading.z = headingFromRank(rank.z);
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {

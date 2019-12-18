@@ -8,9 +8,6 @@
 
 using namespace tinythreads;
 
-Accel3Thread accelThread; // Acceleromoter tracker
-LraThread lraThread; // Haptic feedback
-
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
     // decrease baud rate to fix Serial I/O problems.
@@ -18,13 +15,12 @@ void setup() { // run once, when the sketch starts
     SerialUSB.begin(19200); // long USB cables
     SerialUSB.println("TinyThreads.setup()");
     
-  Wire.begin();
-//  Wireling.begin();
-//  Wireling.selectPort(3);  // This port# matches the one labeled on the adapter board
+    Wire.begin();
 
     // Initialize
-	  accelThread.setup();
+	accelThread.setup();
     lraThread.setup();
+    rangeThread.setup();
     pinMode(LED_BUILTIN, OUTPUT);
     SerialUSB.println("threadRunner.setup");
     threadRunner.setup(LED_BUILTIN);

@@ -10,8 +10,11 @@
 using namespace tinythreads;
 using namespace fireduino;
 
+friend class Thread;
+
+LraThread lraThread; // Haptic feedback
+
 Adafruit_DRV2605 drv;   // The variable used to interface with the DRV2605 chip
-uint8_t effect = 1;  // Waveform effects
 const int powerPin = 4;  // Power to Wireling
 
 // **Wireling boards attached through an Adapter board**
@@ -22,8 +25,8 @@ void setWirelingPort(int port) {
   Wire.endTransmission();
 }
 
-LraThread::LraThread(uint16_t msPeriod)
-    : msPeriod(msPeriod), level(0), effect(0), count(0)
+LraThread::LraThread(uint16_t msPeriod, uint8_t port)
+    : msPeriod(msPeriod), level(0), effect(0), count(0), port(port)
 {}
 
 void LraThread::setup() {
@@ -33,66 +36,42 @@ void LraThread::setup() {
     fireduino::digitalWrite(powerPin, HIGH);
     drv.begin();
     drv.selectLibrary(1);
-    // I2C trigger by sending 'go' command
-    // default, internal trigger when sending GO command
-//    drv.setMode(DRV2605_MODE_INTTRIG);
-//    drv.useLRA();
     serial_print("LraThread.setup");
 }
 
 void LraThread::buzz(uint8_t level) {
+    // 50% duty cycle software PWM buzz
+    // PWM period is twice msPeriod
     this->level = level;
     phase = 0;
 }
 
-void LraThread::setEffect(uint8_t effect, int16_t count) {
+void LraThread::setEffect(uint8_t effect, uint8_t count) {
     this->effect = effect;
     this->count = count;
 }
 
-void LraThread::playEffect() {
-    if (count <= 0) {
-        effect = 0;
-    } else {
-        count--;
-    }
+void LraThread::playWaveform() {
+    // repeat effect every period until count goes to zero
+    if (count) { count--; } else { effect = 0; };
     drv.setMode(DRV2605_MODE_INTTRIG);
     drv.useLRA();
+    // Just use waveform buffer for one effect
     drv.setWaveform(0, effect);  // Set effect
     drv.setWaveform(1, 0);       // End waveform
     drv.go(); // play
-    
-    fireduino::serial_print("lra:");
-    fireduino::serial_print(effect);
-    fireduino::serial_print("\n");
 }
 
 void LraThread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
 
-    setWirelingPort(1); // Tiny Adapter port
+    setWirelingPort(port); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);
         drv.setRealtimeValue((phase%2) ? level : 0);
-        if (++phase > 40) {
-            phase = 0;
-
-            switch(level) {
-              default: level = 1; break;
-              case 1: level = 2; break;
-              case 2: level = 3; break;
-              case 3: level = 32; break;
-              case 32: level = 64; break;
-              case 64: level = 96; break;
-              case 96: level = 128; break;
-              case 128: level = 190; break;
-              case 190: level = 255; break;
-            }
-            fireduino::serial_print(level);
-            fireduino::serial_println(" level");
-        }
+        phase++;
     } else {
-        playEffect();
+        playWaveform();
     }
 }

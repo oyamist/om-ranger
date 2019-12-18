@@ -56,14 +56,18 @@ public:
     void setEffect(uint8_t effect, uint8_t count=1);
 
 protected:
+    uint8_t port;
+    uint8_t count;
     uint8_t phase;
     uint8_t level;
     uint16_t msPeriod;
     uint8_t effect;
-    void playEffect();
+    void playWaveform();
     void setup();
     void loop();
 } LraThread;
+
+extern LraThread lraThread;
 
 } // namespace tinythreads
 

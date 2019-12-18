@@ -12,18 +12,10 @@ typedef struct XYZ {
         this->y = y;
         this->z = z;
     }
-    void print() {
-        serial_print("{x:");
-        serial_print(this->x);
-
-        serial_print(",y:");
-        serial_print(this->y);
-
-        serial_print(",z:");
-        serial_print(this->z);
-        serial_println("}");
-    }
+    void print();
 } XYZ;
+
+#define ACCEL_SAMPLES 32
 
 typedef class Accel3Thread : Thread {
 public:
@@ -34,12 +26,12 @@ public:
 
 protected:
     uint16_t msPeriod;
-    XYZ xyz[SAMPLES];
+    XYZ xyz[ACCEL_SAMPLES];
     int iSample = 0;
 } Accel3Thread;
 
-} // namespace tinythreads
 
 extern Accel3Thread accelThread;
+} // namespace tinythreads
 
 #endif

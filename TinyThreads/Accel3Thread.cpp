@@ -8,12 +8,13 @@
 using namespace tinythreads;
 using namespace fireduino;
 
+namespace tinythreads {
+  
+
 Accel3Thread accelThread; // Acceleromoter tracker
 
 // Accelerometer sensor variables for the sensor and its values
 BMA250 accel_sensor;
-
-#define SAMPLES 32
 
 Accel3Thread::Accel3Thread(uint16_t msPeriod)
     : msPeriod(msPeriod)
@@ -50,6 +51,18 @@ int8_t headingFromRank(int16_t rank) {
     }
 }
 
+void XYZ::print() {
+    serial_print("{x:");
+    serial_print(this->x);
+
+    serial_print(",y:");
+    serial_print(this->y);
+
+    serial_print(",z:");
+    serial_print(this->z);
+    serial_println("}");
+}
+    
 void Accel3Thread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
     accel_sensor.read();
@@ -61,7 +74,7 @@ void Accel3Thread::loop() {
     XYZ minXYZ(curXYZ);
     XYZ maxXYZ(curXYZ);
     rank.set(0,0,0);
-    for (int i = 0; i < SAMPLES; i++) {
+    for (int i = 0; i < ACCEL_SAMPLES; i++) {
         if (x < minXYZ.x) { minXYZ.x = x; }
         if (y < minXYZ.y) { minXYZ.y = y; }
         if (z < minXYZ.z) { minXYZ.z = z; }
@@ -72,10 +85,10 @@ void Accel3Thread::loop() {
         if (y >= xyz[i].y) { rank.y++; }
         if (z >= xyz[i].z) { rank.z++; }
     }
-    rank.x = (100*rank.x)/SAMPLES;
-    rank.y = (100*rank.y)/SAMPLES;
-    rank.z = (100*rank.z)/SAMPLES;
-    iSample = (iSample+1) % SAMPLES;
+    rank.x = (100*rank.x)/ACCEL_SAMPLES;
+    rank.y = (100*rank.y)/ACCEL_SAMPLES;
+    rank.z = (100*rank.z)/ACCEL_SAMPLES;
+    iSample = (iSample+1) % ACCEL_SAMPLES;
     xyz[iSample].set(x,y,z);
     heading.x = headingFromRank(rank.x);
     heading.y = headingFromRank(rank.y);
@@ -95,3 +108,5 @@ void Accel3Thread::loop() {
         }
     }
 }
+
+} // tinythreads

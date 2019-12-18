@@ -12,6 +12,30 @@ typedef struct XYZ {
         this->y = y;
         this->z = z;
     }
+    struct XYZ mapMin(XYZ that);
+    struct XYZ mapMax(XYZ that);
+    inline XYZ operator+(XYZ that) {
+        XYZ xyz;
+        xyz.x = x + that.x;
+        xyz.y = y + that.y;
+        xyz.z = z + that.z;
+        return xyz;
+    }
+    inline XYZ operator-(XYZ that) {
+        XYZ xyz;
+        xyz.x = x - that.x;
+        xyz.y = y - that.y;
+        xyz.z = z - that.z;
+        return xyz;
+    }
+    inline XYZ operator-() {
+        XYZ xyz;
+        xyz.x = -x;
+        xyz.y = -y;
+        xyz.z = -z;
+        return xyz;
+    }
+
     void print();
 } XYZ;
 
@@ -19,15 +43,17 @@ typedef struct XYZ {
 
 typedef class Accel3Thread : Thread {
 public:
-    Accel3Thread(uint16_t msPeriod=32);
+    Accel3Thread(uint16_t msPeriod=32, int16_t damping=10);
     void setup();
     void loop();
     XYZ heading;
 
 protected:
+    int16_t damping;
     uint16_t msPeriod;
     XYZ xyz[ACCEL_SAMPLES];
     int iSample = 0;
+    int8_t headingFromRank(int16_t rank, int16_t range);
 } Accel3Thread;
 
 

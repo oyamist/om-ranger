@@ -2,6 +2,7 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
+#include "fireduino.h"
 #include "BMA250.h"       
 #include "Accel3Thread.h"
 
@@ -10,14 +11,45 @@ using namespace fireduino;
 
 namespace tinythreads {
   
+//////////////////// XYZ ////////////////////
+
+void XYZ::print() {
+    serial_print("{x:");
+    serial_print(this->x);
+
+    serial_print(",y:");
+    serial_print(this->y);
+
+    serial_print(",z:");
+    serial_print(this->z);
+    serial_println("}");
+}
+
+struct XYZ XYZ::mapMin(XYZ that) {
+    XYZ result;
+    result.x = minval(x, that.x);
+    result.y = minval(y, that.y);
+    result.z = minval(z, that.z);
+    return result;
+}
+    
+struct XYZ XYZ::mapMax(XYZ that) {
+    XYZ result;
+    result.x = maxval(x, that.x);
+    result.y = maxval(y, that.y);
+    result.z = maxval(z, that.z);
+    return result;
+}
+    
+//////////////////// Accel3Thread ////////////////////
 
 Accel3Thread accelThread; // Acceleromoter tracker
 
 // Accelerometer sensor variables for the sensor and its values
 BMA250 accel_sensor;
 
-Accel3Thread::Accel3Thread(uint16_t msPeriod)
-    : msPeriod(msPeriod)
+Accel3Thread::Accel3Thread(uint16_t msPeriod, int16_t damping)
+    : msPeriod(msPeriod), damping(damping)
 {}
 
 void Accel3Thread::setup() {
@@ -39,7 +71,10 @@ void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
     }
 }
 
-int8_t headingFromRank(int16_t rank) {
+int8_t Accel3Thread::headingFromRank(int16_t rank, int16_t range) {
+    if (range <= damping) {
+        return 0;
+    }
     if (rank <= 25) {
         return -2;
     } else if (rank <= 50) {
@@ -51,18 +86,6 @@ int8_t headingFromRank(int16_t rank) {
     }
 }
 
-void XYZ::print() {
-    serial_print("{x:");
-    serial_print(this->x);
-
-    serial_print(",y:");
-    serial_print(this->y);
-
-    serial_print(",z:");
-    serial_print(this->z);
-    serial_println("}");
-}
-    
 void Accel3Thread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
     accel_sensor.read();
@@ -75,12 +98,8 @@ void Accel3Thread::loop() {
     XYZ maxXYZ(curXYZ);
     rank.set(0,0,0);
     for (int i = 0; i < ACCEL_SAMPLES; i++) {
-        if (x < minXYZ.x) { minXYZ.x = x; }
-        if (y < minXYZ.y) { minXYZ.y = y; }
-        if (z < minXYZ.z) { minXYZ.z = z; }
-        if (x > maxXYZ.x) { maxXYZ.x = x; }
-        if (y > maxXYZ.y) { maxXYZ.y = y; }
-        if (z > maxXYZ.z) { maxXYZ.z = z; }
+        minXYZ = minXYZ.mapMin(xyz[i]);
+        maxXYZ = maxXYZ.mapMax(xyz[i]);
         if (x >= xyz[i].x) { rank.x++; }
         if (y >= xyz[i].y) { rank.y++; }
         if (z >= xyz[i].z) { rank.z++; }
@@ -90,9 +109,10 @@ void Accel3Thread::loop() {
     rank.z = (100*rank.z)/ACCEL_SAMPLES;
     iSample = (iSample+1) % ACCEL_SAMPLES;
     xyz[iSample].set(x,y,z);
-    heading.x = headingFromRank(rank.x);
-    heading.y = headingFromRank(rank.y);
-    heading.z = headingFromRank(rank.z);
+    XYZ range = maxXYZ - minXYZ;
+    heading.x = headingFromRank(rank.x, range.x);
+    heading.y = headingFromRank(rank.y, range.y);
+    heading.z = headingFromRank(rank.z, range.z);
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {

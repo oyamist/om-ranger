@@ -17,7 +17,7 @@ typedef uint32_t Ticks;
 
 typedef struct ThreadClock  {
     Ticks ticks;
-    uint16_t loops;
+    uint32_t loops;
     ThreadClock() : ticks(0), loops(0) {}
 } ThreadClock, *ThreadClockPtr;
 
@@ -123,7 +123,7 @@ public:
                 continue; // not time yet for scheduled reactivation
             }
 
-            pThread->nextClock.loops++;
+            pThread->nextLoop.loops++;
             pThread->loop();	// reactivate thread
             nHB++;
 

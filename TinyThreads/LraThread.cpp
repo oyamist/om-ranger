@@ -57,7 +57,7 @@ void LraThread::playWaveform() {
 void LraThread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
 
-    wireling::setPort(port); // Tiny Adapter port
+    tinyzero::setPort(port); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);

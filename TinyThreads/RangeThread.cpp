@@ -30,23 +30,20 @@ void RangeThread::loop() {
     // Static ranging pulses with period proportionate to range
     switch (accelThread.heading.x) {
         case -2: // left
-            lraThread.setEffect(0);
             break;
         case -1: // center left
-            lraThread.setEffect(0);
             break;
         case 0: // damped static ranging
-            if (nextLoop.loops % 16) { // 
-                lraThread.setEffect(0);
-            } else {
+            if ((nextLoop.loops % 32) == 0) { // 
                 lraThread.setEffect(DRV2605_SHARP_TICK_3);
+                fireduino::serial_print("static range");
             }
             break;
         case 1: // center right 
-            lraThread.setEffect(0);
             break;
         case 2: // right
             lraThread.setEffect(DRV2605_SHARP_TICK_3);
+            fireduino::serial_print("dynamic range");
             break;
     }
 }

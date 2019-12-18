@@ -5,7 +5,7 @@
 
 extern int __heap_start, *__brkval;
 
-namespace fireduino {
+namespace MilliThreads {
 	inline Print& get_Print() {
 		return SerialUSB;
 	}
@@ -65,15 +65,9 @@ namespace fireduino {
             : (int)(size_t)__brkval
         );
 	}
-} // namespace fireduino
 
-namespace tinyzero {
-
-// **Wireling boards attached through an Adapter board**
-// Selects the correct address of the port being used in the Adapter board
-void setPort(int port);
-
-} // tinyzero
+    void setI2CPort(uint8_t port);
+} // namespace MilliThreads
 
 
 #endif

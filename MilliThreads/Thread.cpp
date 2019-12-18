@@ -61,26 +61,26 @@ void MonitorThread::setup(int pinLED) {
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     this->pinLED = pinLED;
     verbose = false;
-    fireduino::serial_println("MonitorThread::setup()");
+    MilliThreads::serial_println("MonitorThread::setup()");
     if (pinLED != NOPIN) {
-        fireduino::pinMode(pinLED, OUTPUT);
+        MilliThreads::pinMode(pinLED, OUTPUT);
     }
     blinkLED = true;
 }
 
 void MonitorThread::LED(uint8_t value) {
     if (pinLED != NOPIN) {
-        fireduino::digitalWrite(pinLED, value ? HIGH : LOW);
+        MilliThreads::digitalWrite(pinLED, value ? HIGH : LOW);
     }
 }
 
 void MonitorThread::Error(const char *msg, int value) {
     LED(HIGH);
     for (int i = 0; i < 20; i++) {
-        fireduino::serial_print('>');
+        MilliThreads::serial_print('>');
     }
-    fireduino::serial_print(msg);
-    fireduino::serial_println(value);
+    MilliThreads::serial_print(msg);
+    MilliThreads::serial_println(value);
 }
 
 void MonitorThread::loop() {
@@ -98,20 +98,20 @@ void MonitorThread::loop() {
     if (nTardies > 50) {
         Error("T", nTardies);
         for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-            fireduino::serial_print(pThread->id);
-            fireduino::serial_print(":");
-            fireduino::serial_print(pThread->tardies, DEC);
+            MilliThreads::serial_print(pThread->id);
+            MilliThreads::serial_print(":");
+            MilliThreads::serial_print(pThread->tardies, DEC);
             pThread->tardies = 0;
-            fireduino::serial_print(" ");
+            MilliThreads::serial_print(" ");
         }
-        fireduino::serial_println('!');
+        MilliThreads::serial_println('!');
     } else if (nTardies > 20) {
         LED(HIGH);
         verbose = true;
     }
     if (isHigh) {
         if (verbose) {
-            fireduino::serial_print(".");
+            MilliThreads::serial_print(".");
         }
         nTardies = 0;
     }
@@ -147,10 +147,10 @@ void ThreadRunner::setup(int pinLED) {
 void tinythreads::ThreadEnable(bool enable) {
 #ifdef DEBUG_ThreadENABLE
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        fireduino::serial_print(pThread->id);
-        fireduino::serial_print(":");
-        fireduino::serial_print(pThread->nextLoop.ticks, DEC);
-        fireduino::serial_print(" ");
+        MilliThreads::serial_print(pThread->id);
+        MilliThreads::serial_print(":");
+        MilliThreads::serial_print(pThread->nextLoop.ticks, DEC);
+        MilliThreads::serial_print(" ");
     }
 #endif
 }

@@ -39,21 +39,38 @@ typedef struct XYZ {
     void print();
 } XYZ;
 
+typedef int8_t Heading;
+#define HEADING_LFT     -2
+#define HEADING_CTR_LFT -1
+#define HEADING_IDLE     0
+#define HEADING_CTR_RHT  1
+#define HEADING_RHT      2
+
+typedef struct SweepCycle {
+    uint16_t cycles = 0;
+    Ticks lastCycle = 0;
+    Heading nextHeading = HEADING_RHT;
+    Heading heading HEADING_IDLE;
+
+    void setHeading(int16_t rank, int16_t range);
+} SweepCycle;
+
 #define ACCEL_SAMPLES 32
 
 typedef class Accel3Thread : Thread {
 public:
-    Accel3Thread(uint16_t msPeriod=32, int16_t damping=10);
+    Accel3Thread(uint16_t msLoop=32, int16_t damping=10);
     void setup();
     void loop();
-    XYZ heading;
+    SweepCycle xCycle;
+    SweepCycle yCycle;
+    SweepCycle zCycle;
 
 protected:
     int16_t damping;
-    uint16_t msPeriod;
+    uint16_t msLoop;
     XYZ xyz[ACCEL_SAMPLES];
     int iSample = 0;
-    int8_t headingFromRank(int16_t rank, int16_t range);
 } Accel3Thread;
 
 

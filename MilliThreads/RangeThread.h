@@ -10,12 +10,12 @@ namespace tinythreads {
 
 typedef class RangeThread : Thread {
 public:
-    RangeThread(uint16_t msPeriod=VL53L0X_PERIOD, uint8_t port=2);
+    RangeThread(uint16_t msLoop=VL53L0X_PERIOD, uint8_t port=2);
     void setup();
     
 protected:
     uint8_t port;
-    uint16_t msPeriod;
+    uint16_t msLoop;
     void loop();
 } RangeThread;
 

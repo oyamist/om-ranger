@@ -8,14 +8,14 @@
 #include "RangeThread.h"
 
 using namespace tinythreads;
-using namespace fireduino;
+using namespace MilliThreads;
 
 namespace tinythreads {
 
 RangeThread rangeThread;
 
-RangeThread::RangeThread(uint16_t msPeriod, uint8_t port)
-    : msPeriod(msPeriod), port(port)
+RangeThread::RangeThread(uint16_t msLoop, uint8_t port)
+    : msLoop(msLoop), port(port)
 {}
 
 void RangeThread::setup() {
@@ -25,10 +25,10 @@ void RangeThread::setup() {
 }
 
 void RangeThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
+    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
     // Sweep ranging pulses within range
     // Static ranging pulses with period proportionate to range
-    switch (accelThread.heading.x) {
+    switch (accelThread.xCycle.heading) {
         case -2: // left
             break;
         case -1: // center left
@@ -36,14 +36,14 @@ void RangeThread::loop() {
         case 0: // damped static ranging
             if ((nextLoop.loops % 32) == 0) { // 
                 lraThread.setEffect(DRV2605_SHARP_TICK_3);
-                fireduino::serial_print("static range");
+                MilliThreads::serial_print("static range");
             }
             break;
         case 1: // center right 
             break;
         case 2: // right
             lraThread.setEffect(DRV2605_SHARP_TICK_3);
-            fireduino::serial_print("dynamic range");
+            MilliThreads::serial_print("dynamic range");
             break;
     }
 }

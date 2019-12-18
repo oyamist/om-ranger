@@ -2,12 +2,12 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
-#include "fireduino.h"
+#include "MilliThreads.h"
 #include "BMA250.h"       
 #include "Accel3Thread.h"
 
 using namespace tinythreads;
-using namespace fireduino;
+using namespace MilliThreads;
 
 namespace tinythreads {
   
@@ -41,6 +41,33 @@ struct XYZ XYZ::mapMax(XYZ that) {
     return result;
 }
     
+/////////////// SweepCycle /////////////////
+
+#define MAX_CYCLE_TICKS 1500
+
+void SweepCycle::setHeading(int16_t rank, int16_t range) {
+    if (range <= damping) {
+        heading = 0;
+    } else if (rank <= 25) {
+        heading = -2;
+    } else if (rank <= 50) {
+        heading = -1;
+    } else if (rank <= 75) {
+        heading = 1;
+    } else {
+        heading = 2;
+    }
+    if (heading == nextHeading) {
+        Ticks now = ticks();
+        if (now - lastCycle > MAC_CYCLE_TICKS) {
+            heading = 0;
+        }
+        nextHeading = nextHeading == HEADING_RHT 
+            ? HEADING_LFT : HEADING_RHT;
+        lastCycle = now;
+    }
+}
+
 //////////////////// Accel3Thread ////////////////////
 
 Accel3Thread accelThread; // Acceleromoter tracker
@@ -48,8 +75,8 @@ Accel3Thread accelThread; // Acceleromoter tracker
 // Accelerometer sensor variables for the sensor and its values
 BMA250 accel_sensor;
 
-Accel3Thread::Accel3Thread(uint16_t msPeriod, int16_t damping)
-    : msPeriod(msPeriod), damping(damping)
+Accel3Thread::Accel3Thread(uint16_t msLoop, int16_t damping)
+    : msLoop(msLoop), damping(damping)
 {}
 
 void Accel3Thread::setup() {
@@ -60,34 +87,19 @@ void Accel3Thread::setup() {
 }
 
 void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
-    if (v <= 25) { 
+    if (v <= 13) { 
         serial_print(s1);
     } else if (v <= 50) { 
         serial_print(s2);
-    } else if (v <= 75) { 
+    } else if (v <= 87) { 
         serial_print(s3);
     } else {
         serial_print(s4);
     }
 }
 
-int8_t Accel3Thread::headingFromRank(int16_t rank, int16_t range) {
-    if (range <= damping) {
-        return 0;
-    }
-    if (rank <= 25) {
-        return -2;
-    } else if (rank <= 50) {
-        return -1;
-    } else if (rank <= 75) {
-        return 1;
-    } else {
-        return 2;
-    }
-}
-
 void Accel3Thread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
+    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
     accel_sensor.read();
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
@@ -110,9 +122,9 @@ void Accel3Thread::loop() {
     iSample = (iSample+1) % ACCEL_SAMPLES;
     xyz[iSample].set(x,y,z);
     XYZ range = maxXYZ - minXYZ;
-    heading.x = headingFromRank(rank.x, range.x);
-    heading.y = headingFromRank(rank.y, range.y);
-    heading.z = headingFromRank(rank.z, range.z);
+    xCycle.setHeading(rank.x, range.x);
+    yCycle.setHeading(rank.y, range.y);
+    zCycle.setHeading(rank.z, range.z);
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {

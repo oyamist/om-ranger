@@ -14,7 +14,7 @@ void setup() { // run once, when the sketch starts
     // decrease baud rate to fix Serial I/O problems.
     //SerialUSB.begin(38400); // short USB cables
     SerialUSB.begin(19200); // long USB cables
-    SerialUSB.println("TinyThreads.setup()");
+    SerialUSB.println("MilliThreads.setup()");
     
     Wire.begin();
 

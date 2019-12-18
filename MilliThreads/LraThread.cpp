@@ -8,7 +8,7 @@
 #include "Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
 
 using namespace tinythreads;
-using namespace fireduino;
+using namespace MilliThreads;
 
 namespace tinythreads {
 
@@ -17,15 +17,15 @@ LraThread lraThread; // Haptic feedback
 Adafruit_DRV2605 drv;   // The variable used to interface with the DRV2605 chip
 const int powerPin = 4;  // Power to Wireling
 
-LraThread::LraThread(uint16_t msPeriod, uint8_t port)
-    : msPeriod(msPeriod), level(0), effect(0), count(0), port(port)
+LraThread::LraThread(uint16_t msLoop, uint8_t port)
+    : msLoop(msLoop), level(0), effect(0), count(0), port(port)
 {}
 
 void LraThread::setup() {
     id = 'L';
     Thread::setup();
-    fireduino::pinMode(powerPin, OUTPUT);
-    fireduino::digitalWrite(powerPin, HIGH);
+    MilliThreads::pinMode(powerPin, OUTPUT);
+    MilliThreads::digitalWrite(powerPin, HIGH);
     drv.begin();
     drv.selectLibrary(1);
     serial_print("LraThread.setup");
@@ -33,7 +33,7 @@ void LraThread::setup() {
 
 void LraThread::buzz(uint8_t level) {
     // 50% duty cycle software PWM buzz
-    // PWM period is twice msPeriod
+    // PWM period is twice msLoop
     this->level = level;
     phase = 0;
 }
@@ -55,14 +55,13 @@ void LraThread::playWaveform() {
 }
 
 void LraThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
+    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
 
-    tinyzero::setPort(port); // Tiny Adapter port
+    MilliThreads::setI2CPort(port); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);
-        drv.setRealtimeValue((phase%2) ? level : 0);
-        phase++;
+        drv.setRealtimeValue((nextLoop.loops%2) ? level : 0);
     } else {
         playWaveform();
     }

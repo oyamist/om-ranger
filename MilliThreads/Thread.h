@@ -1,16 +1,16 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "fireduino.h"
-extern uint32_t fireduino_timer;
-extern void fireduino_timer_handler();
+#include "MilliThreads.h"
+extern uint32_t MilliThreads_timer;
+extern void MilliThreads_timer_handler();
 
 namespace tinythreads {
 
 extern int16_t leastFreeRam;
 
 /**
- * A Tick is 1 millisecond for all TinyThreads implementations. 
+ * A Tick is 1 millisecond for all MilliThreads implementations. 
  * Clock overflows in about 50 days
  */
 typedef uint32_t Ticks;
@@ -27,13 +27,18 @@ public:
     virtual void setup();
     virtual void loop() {}
 
+    // Next thread in list of running threads
     struct Thread *pNext;
 
     // Threads should increment the loop as desired.
     // Threads with 0 nextLoop will always run ASAP.
     ThreadClock nextLoop;
 
+    // tardies increase when threads don't execute
+    // when they should
     uint8_t tardies;
+
+    // used to identify thread statistics
     char id;
 }
 Thread, *ThreadPtr;

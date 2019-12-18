@@ -7,17 +7,17 @@
 
 
 
-namespace tinyzero {
+namespace MilliThreads {
 
 // **Wireling boards attached through an Adapter board**
 // Selects the correct address of the port being used in the Adapter board
-void setPort(int port) {
+void setI2CPort(uint8_t port) {
   Wire.beginTransmission(0x70);
   Wire.write(0x04 + port);
   Wire.endTransmission();
 }
 
-} // tinyzero
+} // MilliThreads
 
 
 #endif

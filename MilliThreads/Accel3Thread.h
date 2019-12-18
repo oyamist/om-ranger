@@ -50,9 +50,9 @@ typedef struct SweepCycle {
     uint16_t cycles = 0;
     Ticks lastCycle = 0;
     Heading nextHeading = HEADING_RHT;
-    Heading heading HEADING_IDLE;
+    Heading heading = HEADING_IDLE;
 
-    void setHeading(int16_t rank, int16_t range);
+    void setHeading(int16_t rank, bool damped);
 } SweepCycle;
 
 #define ACCEL_SAMPLES 32

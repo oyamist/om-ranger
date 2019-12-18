@@ -45,8 +45,8 @@ struct XYZ XYZ::mapMax(XYZ that) {
 
 #define MAX_CYCLE_TICKS 1500
 
-void SweepCycle::setHeading(int16_t rank, int16_t range) {
-    if (range <= damping) {
+void SweepCycle::setHeading(int16_t rank, bool damped) {
+    if (damped) {
         heading = 0;
     } else if (rank <= 25) {
         heading = -2;
@@ -59,7 +59,7 @@ void SweepCycle::setHeading(int16_t rank, int16_t range) {
     }
     if (heading == nextHeading) {
         Ticks now = ticks();
-        if (now - lastCycle > MAC_CYCLE_TICKS) {
+        if (now - lastCycle > MAX_CYCLE_TICKS) {
             heading = 0;
         }
         nextHeading = nextHeading == HEADING_RHT 
@@ -122,9 +122,9 @@ void Accel3Thread::loop() {
     iSample = (iSample+1) % ACCEL_SAMPLES;
     xyz[iSample].set(x,y,z);
     XYZ range = maxXYZ - minXYZ;
-    xCycle.setHeading(rank.x, range.x);
-    yCycle.setHeading(rank.y, range.y);
-    zCycle.setHeading(rank.z, range.z);
+    xCycle.setHeading(rank.x, range.x<=damping);
+    yCycle.setHeading(rank.y, range.y<=damping);
+    zCycle.setHeading(rank.z, range.z<=damping);
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {

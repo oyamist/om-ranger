@@ -35,7 +35,6 @@ void LraThread::buzz(uint8_t level) {
     // 50% duty cycle software PWM buzz
     // PWM period is twice msLoop
     this->level = level;
-    phase = 0;
 }
 
 void LraThread::setEffect(uint8_t effect, uint8_t count) {

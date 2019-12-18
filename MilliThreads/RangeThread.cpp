@@ -36,14 +36,14 @@ void RangeThread::loop() {
         case 0: // damped static ranging
             if ((nextLoop.loops % 32) == 0) { // 
                 lraThread.setEffect(DRV2605_SHARP_TICK_3);
-                MilliThreads::serial_print("static range");
+                MilliThreads::serial_println("static range");
             }
             break;
         case 1: // center right 
             break;
         case 2: // right
             lraThread.setEffect(DRV2605_SHARP_TICK_3);
-            MilliThreads::serial_print("dynamic range");
+          //  MilliThreads::serial_println("dynamic range");
             break;
     }
 }

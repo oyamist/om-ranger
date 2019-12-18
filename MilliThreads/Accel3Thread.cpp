@@ -45,14 +45,16 @@ struct XYZ XYZ::mapMax(XYZ that) {
 
 #define MAX_CYCLE_TICKS 1500
 
+SweepCycle::SweepCycle(char id) : id(id) {}
+
 void SweepCycle::setHeading(int16_t rank, bool damped) {
     if (damped) {
         heading = 0;
-    } else if (rank <= 25) {
+    } else if (rank <= 13) {
         heading = -2;
     } else if (rank <= 50) {
         heading = -1;
-    } else if (rank <= 75) {
+    } else if (rank <= 87) {
         heading = 1;
     } else {
         heading = 2;
@@ -66,6 +68,36 @@ void SweepCycle::setHeading(int16_t rank, bool damped) {
             ? HEADING_LFT : HEADING_RHT;
         lastCycle = now;
     }
+}
+
+void SweepCycle::print() {
+    char *prefix = "";
+    char *suffix = "";
+    switch (heading) {
+    case -2: 
+      suffix = "-:--";
+      break;
+    case -1:
+      prefix = "-";
+      suffix = ":--";
+      break;
+    case 0:
+      prefix = "--";
+      suffix = "--";
+      break;
+    case 1:
+      prefix = "--:";
+      suffix = "-";
+      break;
+    case 2:
+      prefix = "--:-";
+      break;
+    }
+    MilliThreads::serial_print(prefix);
+    MilliThreads::serial_print(id);
+    MilliThreads::serial_print(suffix);
+    MilliThreads::serial_print(" ");
+    MilliThreads::serial_print(nextHeading);
 }
 
 //////////////////// Accel3Thread ////////////////////
@@ -131,9 +163,7 @@ void Accel3Thread::loop() {
         serial_print("ERROR! NO BMA250 DETECTED!");
     } else { 
         if ((iSample % 10) == 0) {
-            rankPrint(rank.x, " X---", " -X--", " --X-", " ---X");
-            rankPrint(rank.y, " Y---", " -Y--", " --Y-", " ---Y");
-            rankPrint(rank.z, " Z---", " -Z--", " --Z-", " ---Z");
+            xCycle.print();
             serial_print(" ");
             serial_print((int16_t)(xyz[iSample].x-curXYZ.x));
             serial_print("\n");

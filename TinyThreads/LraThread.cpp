@@ -22,9 +22,9 @@ void setWirelingPort(int port) {
   Wire.endTransmission();
 }
 
-LraThread::LraThread(){
-    level = 0;
-}
+LraThread::LraThread(uint16_t msPeriod)
+    : msPeriod(msPeriod), level(0), effect(0), count(0)
+{}
 
 void LraThread::setup() {
     id = 'L';
@@ -45,7 +45,17 @@ void LraThread::buzz(uint8_t level) {
     phase = 0;
 }
 
-void LraThread::setEffect(uint8_t effect) {
+void LraThread::setEffect(uint8_t effect, int16_t count) {
+    this->effect = effect;
+    this->count = count;
+}
+
+void LraThread::playEffect() {
+    if (count <= 0) {
+        effect = 0;
+    } else {
+        count--;
+    }
     drv.setMode(DRV2605_MODE_INTTRIG);
     drv.useLRA();
     drv.setWaveform(0, effect);  // Set effect
@@ -58,7 +68,7 @@ void LraThread::setEffect(uint8_t effect) {
 }
 
 void LraThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(50);
+    nextLoop.ticks = ticks() + MS_TICKS(msPeriod);
 
     setWirelingPort(1); // Tiny Adapter port
 
@@ -83,45 +93,6 @@ void LraThread::loop() {
             fireduino::serial_println(" level");
         }
     } else {
-        switch (phase) {
-        case 0: 
-        case 1: 
-        case 2: 
-        case 3: 
-        case 4: 
-          setEffect(0); 
-          break;
-        case 5: 
-          setEffect(0);
-          break;
-        case 6: 
-          setEffect(0);
-          break;
-        case 7: 
-          setEffect(0);
-          break;
-        case 8: 
-          setEffect(0);
-          break;
-        case 9: 
-         // setEffect(0);
-          break;
-        case 10: 
-         // setEffect(0);
-          break;
-        case 11: 
-          setEffect(DRV2605_SHARP_TICK_3);
-          break;
-        case 12: 
-          setEffect(DRV2605_SHARP_TICK_1);
-          break;
-        case 13: 
-          setEffect(DRV2605_SHARP_TICK_1);
-          break;
-        }
-        phase = ++phase % 12;
+        playEffect();
     }
-
-    //setEffect(effect);
-   // effect = (effect + 1) % 117;
 }

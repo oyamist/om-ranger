@@ -23,7 +23,7 @@ void setWirelingPort(int port) {
 }
 
 LraThread::LraThread(){
-    level = 255;
+    level = 0;
 }
 
 void LraThread::setup() {
@@ -58,31 +58,32 @@ void LraThread::setEffect(uint8_t effect) {
 }
 
 void LraThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(5);
+    nextLoop.ticks = ticks() + MS_TICKS(2000);
 
     setWirelingPort(1); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);
         drv.setRealtimeValue((phase%2) ? level : 0);
-    }
+        if (++phase > 40) {
+            phase = 0;
 
-    if (++phase > 40) {
-        phase = 0;
-
-        switch(level) {
-          default: level = 1; break;
-          case 1: level = 2; break;
-          case 2: level = 3; break;
-          case 3: level = 32; break;
-          case 32: level = 64; break;
-          case 64: level = 96; break;
-          case 96: level = 128; break;
-          case 128: level = 190; break;
-          case 190: level = 255; break;
+            switch(level) {
+              default: level = 1; break;
+              case 1: level = 2; break;
+              case 2: level = 3; break;
+              case 3: level = 32; break;
+              case 32: level = 64; break;
+              case 64: level = 96; break;
+              case 96: level = 128; break;
+              case 128: level = 190; break;
+              case 190: level = 255; break;
+            }
+            fireduino::serial_print(level);
+            fireduino::serial_println(" level");
         }
-        fireduino::serial_print(level);
-        fireduino::serial_println(" level");
+    } else {
+        setEffect(DRV2605_TRANSITION_RAMP_UP_LONG_SMOOTH_1);
     }
 
     //setEffect(effect);

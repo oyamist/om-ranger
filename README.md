@@ -1,4 +1,6 @@
-# OM-Ranger - An Infrared Visual Assistance Support Cane
+# OM-Ranger - An Infrared Support Wand
+### Touch-free visual assistance
+### "Feel at OM on the Range"
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.

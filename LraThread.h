@@ -3,8 +3,6 @@
 
 #include "Thread.h"
 
-namespace om {
-
 #define DRV2605_STRONG_CLICK_30 3
 #define DRV2605_SHARP_CLICK 4
 #define DRV2605_SHARP_TICK_1 24
@@ -49,7 +47,7 @@ namespace om {
 #define DRV2605_TRANSITION_RAMP_UP_SHORT_SHARP_1_100 92
 
 
-typedef class LraThread : Thread {
+typedef class LraThread : om::Thread {
 public:
     LraThread(uint16_t msLoop=50, uint8_t port=I2CPORT_LRA);
     void buzz(uint8_t level);
@@ -68,6 +66,5 @@ protected:
 
 extern LraThread lraThread;
 
-} // namespace om
 
 #endif

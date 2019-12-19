@@ -3,8 +3,6 @@
 
 #include "Thread.h"
 
-namespace om {
-
 typedef struct XYZ {
     int16_t x=0, y=0, z=0;
     void set(int x, int y, int z) {
@@ -46,12 +44,13 @@ typedef int16_t Heading;
 #define HEADING_CTR_RHT  1
 #define HEADING_RHT      2
 
+
 typedef class SweepCycle {
 public:
     SweepCycle(char id);
     char id;
     uint16_t cycles = 0;
-    Ticks lastCycle = 0;
+    om::Ticks lastCycle = 0;
     Heading nextHeading = HEADING_RHT;
     Heading heading = HEADING_IDLE;
 
@@ -61,7 +60,7 @@ public:
 
 #define ACCEL_SAMPLES 32
 
-typedef class Accel3Thread : Thread {
+typedef class Accel3Thread : om::Thread {
 public:
     Accel3Thread(uint16_t msLoop=32, int16_t damping=10);
     void setup();
@@ -79,6 +78,6 @@ protected:
 
 
 extern Accel3Thread accelThread;
-} // namespace om
+
 
 #endif

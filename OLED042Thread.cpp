@@ -10,10 +10,6 @@
 #include "src/tinycircuits/Font_042.h"  // The font displayed on the screen
 #include "src/tinycircuits/TinyCircuits_HP7240.h"    // Library for OLED screen
 
-using namespace om;
-
-namespace om {
-
 OLED042Thread oledThread; 
 
 TinyCircuits_HP7240 TiniestScreen;  // 0.42" Wireling screen
@@ -46,7 +42,7 @@ void OLED042Thread::setup() {
 }
 
 void OLED042Thread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
+    nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
     textPos = ((nextLoop.loops%3)+1)*72;
@@ -62,7 +58,7 @@ void OLED042Thread::initScreen(void){
     TiniestScreen.resetScreen(resetPin);  // reset BEFORE init()
     TiniestScreen.init();     
     clearOLED();              
-    delay(2);
+    om::delay(2);
     TiniestScreen.sendFramebuffer(oledbuf); // update screen
 }
 
@@ -77,5 +73,3 @@ void OLED042Thread::setPixel(int px, int py) {
     py = (py % 8);  
     oledbuf[pos] |= (1 << (py)); 
 }
-
-} // om

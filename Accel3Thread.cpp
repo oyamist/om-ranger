@@ -6,11 +6,6 @@
 #include "src/tinycircuits/BMA250.h"       
 #include "Accel3Thread.h"
 
-using namespace om;
-using namespace om;
-
-namespace om {
-  
 //////////////////// XYZ ////////////////////
 
 void XYZ::print() {
@@ -60,7 +55,7 @@ void SweepCycle::setHeading(int16_t rank, bool damped) {
         heading = 2;
     }
     if (heading == nextHeading) {
-        Ticks now = ticks();
+        om::Ticks now = om::ticks();
         if (now - lastCycle > MAX_CYCLE_TICKS) {
             heading = 0;
         }
@@ -131,7 +126,7 @@ void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
 }
 
 void Accel3Thread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
+    nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     accel_sensor.read();
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
@@ -170,5 +165,3 @@ void Accel3Thread::loop() {
         }
     }
 }
-
-} // om

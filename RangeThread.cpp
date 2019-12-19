@@ -10,8 +10,6 @@
 using namespace om;
 using namespace om;
 
-namespace om {
-
 RangeThread rangeThread;
 
 RangeThread::RangeThread(uint16_t msLoop, uint8_t port)
@@ -25,7 +23,7 @@ void RangeThread::setup() {
 }
 
 void RangeThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
+    nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     // Sweep ranging pulses within range
     // Static ranging pulses with period proportionate to range
     switch (accelThread.xCycle.heading) {
@@ -47,5 +45,3 @@ void RangeThread::loop() {
             break;
     }
 }
-
-} // om

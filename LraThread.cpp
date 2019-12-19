@@ -7,10 +7,6 @@
 #include <Wire.h>             // For using I2C communication
 #include "src/adafruit/Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
 
-using namespace om;
-
-namespace om {
-
 LraThread lraThread; // Haptic feedback
 
 Adafruit_DRV2605 drv;   // The variable used to interface with the DRV2605 chip
@@ -53,7 +49,7 @@ void LraThread::playWaveform() {
 }
 
 void LraThread::loop() {
-    nextLoop.ticks = ticks() + MS_TICKS(msLoop);
+    nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
 
     om::setI2CPort(port); // Tiny Adapter port
 
@@ -64,5 +60,3 @@ void LraThread::loop() {
         playWaveform();
     }
 }
-
-} // om

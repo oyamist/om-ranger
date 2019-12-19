@@ -1,5 +1,5 @@
-#ifndef FIREDUINO_TINYZERO_H
-#define FIREDUINO_TINYZERO_H
+#ifndef OMILLI_TINYZERO_H
+#define OMILLI_TINYZERO_H
 
 #include "Arduino.h"
 #include <Wire.h>

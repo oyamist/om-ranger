@@ -1,7 +1,7 @@
 #ifndef FIREDUINO_TINYZERO_H
 #define FIREDUINO_TINYZERO_H
 
-#include "Arduino.h"
+#include <Arduino.h>
 
 extern int __heap_start, *__brkval;
 

@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <Wire.h>         // For I2C communication with sensor
 #include <Wireling.h>               // For interfacing with Wirelings
-#include "Accel3Thread.h"
-#include "LraThread.h"
-#include "RangeThread.h"
-#include "OLED042Thread.h"
+#include "src/Accel3Thread.h"
+#include "src/LraThread.h"
+#include "src/RangeThread.h"
+#include "src/OLED042Thread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 

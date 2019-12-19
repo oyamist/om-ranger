@@ -1,7 +1,7 @@
 #ifndef LRA_THREAD_H
 #define LRA_THREAD_H
 
-#include "Thread.h"
+#include "src/omilli/Thread.h"
 
 #define DRV2605_STRONG_CLICK_30 3
 #define DRV2605_SHARP_CLICK 4

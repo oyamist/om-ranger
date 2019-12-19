@@ -2,7 +2,7 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
-#include "OMilli.h"
+#include "src/omilli/OMilli.h"
 #include "src/tinycircuits/BMA250.h"       
 #include "Accel3Thread.h"
 

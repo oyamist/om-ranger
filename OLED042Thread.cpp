@@ -4,8 +4,8 @@
 #endif 
 #include <Wire.h>                   // For using I2C communication
 #include <Wireling.h>               // For interfacing with Wirelings
-#include "Thread.h"
-#include "OMilli.h"
+#include "src/omilli/Thread.h"
+#include "src/omilli/OMilli.h"
 #include "OLED042Thread.h"
 #include "src/tinycircuits/Font_042.h"  // The font displayed on the screen
 #include "src/tinycircuits/TinyCircuits_HP7240.h"    // Library for OLED screen

@@ -1,4 +1,4 @@
-#include <Arduino.h>
+ #include <Arduino.h>
 #include <Wire.h>         // For I2C communication with sensor
 #include <Wireling.h>               // For interfacing with Wirelings
 #include "Accel3Thread.h"

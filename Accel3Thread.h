@@ -1,7 +1,7 @@
 #ifndef ACCEL3_THREAD_H
 #define ACCEL3_THREAD_H
 
-#include "Thread.h"
+#include "src/omilli/Thread.h"
 
 typedef struct XYZ {
     int16_t x=0, y=0, z=0;

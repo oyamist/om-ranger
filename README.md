@@ -15,7 +15,7 @@ and is implemented with the [[OMilli]] multi-threaded operating system
 for microcontrollers.
 
 * [TinyZero MCU](https://tinycircuits.com/products/tinyzero-processor)
-* [TinyCircuits TOF distance sensor Wireline](https://tinycircuits.com/products/tof-distance-sensor-wireling-vl53l0x)
+* [TinyCircuits TOF distance sensor Wireling](https://tinycircuits.com/products/tof-distance-sensor-wireling-vl53l0x)
 * [TinyCircuits LRA Driver](https://tinycircuits.com/products/lra-wireling-drv2605)
 
 

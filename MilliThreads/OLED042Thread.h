@@ -2,7 +2,7 @@
 #ifndef OLED042_THREAD_H
 #define OLED042_THREAD_H
 
-#include "Thread.h"
+#include "MilliThreads.h"
 
 namespace MilliThreads {
 
@@ -11,7 +11,7 @@ namespace MilliThreads {
  */
 typedef class OLED042Thread : Thread {
 public:
-    OLED042Thread(uint16_t msLoop=1000, uint8_t port=I2CPORT_OLED042);
+    OLED042Thread(uint16_t msLoop=1000, uint8_t port=I2CPORT_DISPLAY);
     void setup();
     void initScreen(void);
     void setPixel(int px, int py);

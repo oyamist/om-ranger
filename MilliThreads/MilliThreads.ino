@@ -4,6 +4,7 @@
 #include "Accel3Thread.h"
 #include "LraThread.h"
 #include "RangeThread.h"
+#include "OLED042Thread.h"
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
@@ -23,8 +24,9 @@ void setup() { // run once, when the sketch starts
 	accelThread.setup();
     lraThread.setup();
     rangeThread.setup();
-    pinMode(LED_BUILTIN, OUTPUT);
-    SerialUSB.println("threadRunner.setup");
+    oledThread.setup();
+    MilliThreads::pinMode(LED_BUILTIN, OUTPUT);
+    MilliThreads::serial_println("threadRunner.setup");
     threadRunner.setup(LED_BUILTIN);
 }
 

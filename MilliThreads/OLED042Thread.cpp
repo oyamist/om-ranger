@@ -2,6 +2,8 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
+#include "Thread.h"
+#include "MilliThreads.h"
 #include "OLED042Thread.h"
 #include <Wire.h>                   // For using I2C communication
 #include <Wireling.h>               // For interfacing with Wirelings
@@ -39,16 +41,19 @@ void OLED042Thread::setup() {
     id = 'D';
     Thread::setup();
     Wireling.begin();
-    Wireling.selectPort(SCREEN_PORT);  // 
+    Wireling.selectPort(port);  // 
     initScreen(); // Initialize the Screen
 }
 
 void OLED042Thread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msLoop);
+    Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
-    textPos = 3*72;
+    textPos = ((nextLoop.loops%3)+1)*72;
     TiniestScreen.setCursorX(textPos);
-    TiniestScreen.printSSD(oledbuf, "Bun and Duck"); 
+    char msg[100];
+    sprintf(msg, "Hello %d", nextLoop.loops);
+    TiniestScreen.printSSD(oledbuf, msg); 
     TiniestScreen.sendFramebuffer(oledbuf);
 }
 

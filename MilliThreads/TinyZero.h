@@ -5,7 +5,7 @@
 
 extern int __heap_start, *__brkval;
 
-namespace MilliThreads {
+namespace om {
 	inline Print& get_Print() {
 		return SerialUSB;
 	}
@@ -18,19 +18,19 @@ namespace MilliThreads {
 	inline void serial_begin(int32_t baud) {
 		SerialUSB.begin(baud);
 	}
-	inline void serial_print(const char *value) {
+	inline void om::print(const char *value) {
 		SerialUSB.print(value);
 	}
-	inline void serial_print(const char value) {
+	inline void om::print(const char value) {
 		SerialUSB.print(value);
 	}
-  inline void serial_print(int16_t value, int16_t format = DEC) {
+  inline void om::print(int16_t value, int16_t format = DEC) {
     SerialUSB.print(value, format);
   }
-  inline void serial_print(uint8_t value, int16_t format = DEC) {
+  inline void om::print(uint8_t value, int16_t format = DEC) {
     SerialUSB.print(value, format);
   }
-  inline void serial_print(double value, int16_t format = 3) {
+  inline void om::print(double value, int16_t format = 3) {
     SerialUSB.print(value, format);
   }
   inline void pinMode(int16_t pin, int16_t inout) {
@@ -67,7 +67,7 @@ namespace MilliThreads {
 	}
 
     void setI2CPort(uint8_t port);
-} // namespace MilliThreads
+} // namespace om
 
 
 #endif

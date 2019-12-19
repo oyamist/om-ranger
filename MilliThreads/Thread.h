@@ -1,16 +1,14 @@
 #ifndef THREAD_H
 #define THREAD_H
 
-#include "MilliThreads.h"
-extern uint32_t MilliThreads_timer;
-extern void MilliThreads_timer_handler();
+#include "OMilli.h"
 
-namespace MilliThreads {
+namespace om {
 
 extern int16_t leastFreeRam;
 
 /**
- * A Tick is 1 millisecond for all MilliThreads implementations. 
+ * A Tick is 1 millisecond for all OMilli implementations. 
  * Clock overflows in about 50 days
  */
 typedef uint32_t Ticks;
@@ -153,6 +151,6 @@ extern ThreadRunner threadRunner;
 
 extern Ticks ticks();
 
-} // namespace MilliThreads
+} // namespace om
 
 #endif

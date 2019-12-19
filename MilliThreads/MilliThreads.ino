@@ -8,14 +8,14 @@
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
-using namespace MilliThreads;
+using namespace om;
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
     // decrease baud rate to fix Serial I/O problems.
     //SerialUSB.begin(38400); // short USB cables
     SerialUSB.begin(19200); // long USB cables
-    SerialUSB.println("MilliThreads.setup()");
+    SerialUSB.println("om.setup()");
     
     Wire.begin();
     Wire.setClock(400000);
@@ -25,8 +25,8 @@ void setup() { // run once, when the sketch starts
     lraThread.setup();
     rangeThread.setup();
     oledThread.setup();
-    MilliThreads::pinMode(LED_BUILTIN, OUTPUT);
-    MilliThreads::serial_println("threadRunner.setup");
+    om::pinMode(LED_BUILTIN, OUTPUT);
+    om::println("threadRunner.setup");
     threadRunner.setup(LED_BUILTIN);
 }
 

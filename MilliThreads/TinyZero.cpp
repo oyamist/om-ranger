@@ -7,7 +7,7 @@
 
 
 
-namespace MilliThreads {
+namespace om {
 
 // **Wireling boards attached through an Adapter board**
 // Selects the correct address of the port being used in the Adapter board
@@ -17,7 +17,7 @@ void setI2CPort(uint8_t port) {
   Wire.endTransmission();
 }
 
-} // MilliThreads
+} // om
 
 
 #endif

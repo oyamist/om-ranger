@@ -7,10 +7,10 @@
 #include "LraThread.h"
 #include "RangeThread.h"
 
-using namespace MilliThreads;
-using namespace MilliThreads;
+using namespace om;
+using namespace om;
 
-namespace MilliThreads {
+namespace om {
 
 RangeThread rangeThread;
 
@@ -21,7 +21,7 @@ RangeThread::RangeThread(uint16_t msLoop, uint8_t port)
 void RangeThread::setup() {
     id = 'R';
     Thread::setup();
-    serial_print("RangeThread.setup");
+    om::print("RangeThread.setup");
 }
 
 void RangeThread::loop() {
@@ -36,16 +36,16 @@ void RangeThread::loop() {
         case 0: // damped static ranging
             if ((nextLoop.loops % 32) == 0) { // 
                 lraThread.setEffect(DRV2605_SHARP_TICK_3);
-                MilliThreads::serial_println("static range");
+                om::println("static range");
             }
             break;
         case 1: // center right 
             break;
         case 2: // right
             lraThread.setEffect(DRV2605_SHARP_TICK_3);
-          //  MilliThreads::serial_println("dynamic range");
+          //  om::println("dynamic range");
             break;
     }
 }
 
-} // MilliThreads
+} // om

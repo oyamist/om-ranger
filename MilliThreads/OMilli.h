@@ -1,5 +1,5 @@
-#ifndef FIREDUINO_H
-#define FIREDUINO_H
+#ifndef OMILLI_H
+#define OMILLI_H
 
 #define NOPIN -1
 #define minval(a,b) ((a)<(b)?(a):(b))
@@ -19,24 +19,24 @@
 #define I2CPORT_LRA 1
 #define I2CPORT_TOF 2
 
-#if defined(MOCK_MEGA2560)
+#if defined(MOCK_ARDUINO)
 #define NO_MCU
 #include "MockDuino.h"
 #elif defined( ARDUINO_SAMD_ZERO )
 #include "TinyZero.h"
 #else
 #define NO_MCU
-namespace MilliThreads { // abstract API implementable any way you like
+namespace om { // abstract API implementable any way you like
 	//////////////////// ARDUINO SPECIFIC ///////////////////
 	Print& get_Print();
 	int16_t serial_read();
 	int16_t serial_available();
 	void serial_begin(int32_t baud);
-	void serial_print(const char *value);
-	void serial_print(const char value);
-	void serial_print(int16_t value, int16_t format = DEC);
-    void serial_print(uint8_t value, int16_t format = DEC);
-    void serial_print(double value, int16_t places = 3);
+	void print(const char *value);
+	void print(const char value);
+	void print(int16_t value, int16_t format = DEC);
+    void print(uint8_t value, int16_t format = DEC);
+    void print(double value, int16_t places = 3);
 	void pinMode(int16_t pin, int16_t inout);
 	int16_t digitalRead(int16_t pin);
 	void digitalWrite(int16_t dirPin, int16_t value);
@@ -49,25 +49,24 @@ namespace MilliThreads { // abstract API implementable any way you like
 	////////////////// OTHER ///////////////////
     void setI2CPort(uint8_t port);
 
-	int16_t freeRam ();
-} // namespace MilliThreads
+} // namespace om
 #endif
 
-namespace MilliThreads {
-	inline void serial_println() {
-		serial_print('\n');
-	}
-	inline void serial_println(const char value) {
-		serial_print(value);
-		serial_print('\n');
-	}
-	inline void serial_println(const char* value) {
-		serial_print(value);
-		serial_print('\n');
-	}
+////////////////////// API Extensions ////////////////////
+inline void om:println() {
+    om::print('\n');
+}
+inline void om:println(const char value) {
+    om::print(value);
+    om::print('\n');
+}
+inline void om:println(const char* value) {
+    om::print(value);
+    om::print('\n');
 }
 
 
+// Testing macros are useful for MOCK_ARDUINO 
 #ifdef TEST
 #define TESTCOUT1(k,v) cout << k << v << endl
 #define TESTCOUT2(k1,v1,k2,v2) cout << k1<<v1 <<k2<<v2 << endl
@@ -89,11 +88,12 @@ namespace MilliThreads {
 #define DIE()
 #endif
 
-#define DEBUG_EOL() MilliThreads::serial_println("");
-#define DEBUG_HEX(S,V) MilliThreads::serial_print(" " S ":");MilliThreads::serial_print(V,HEX);
-#define DEBUG_DEC(S,V) MilliThreads::serial_print(" " S ":");MilliThreads::serial_print(V,DEC);
+#define DEBUG_EOL() om::println("");
+#define DEBUG_HEX(S,V) om::print(" " S ":");om::print(V,HEX);
+#define DEBUG_DEC(S,V) om::print(" " S ":");om::print(V,DEC);
 
 #define TICKS_PER_SECOND ((int32_t)1000)
 #define MS_TICKS(ms) (1*ms) /* Convert milliseconds to Ticks */
 
+////////////////////////////// OMILLI_H /////////////////////////
 #endif

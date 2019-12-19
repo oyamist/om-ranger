@@ -1,11 +1,11 @@
 #include <Arduino.h>
 #include "Thread.h"
 
-using namespace MilliThreads;
+using namespace om;
 
 #define MAX_THREADS 32
 
-namespace MilliThreads {
+namespace om {
     ThreadRunner 	threadRunner;
     struct Thread *	pThreadList;
     int 			nThreads;
@@ -61,26 +61,26 @@ void MonitorThread::setup(int pinLED) {
     PulseThread::setup(MS_TICKS(1000), MS_TICKS(250));
     this->pinLED = pinLED;
     verbose = false;
-    MilliThreads::serial_println("MonitorThread::setup()");
+    om::println("MonitorThread::setup()");
     if (pinLED != NOPIN) {
-        MilliThreads::pinMode(pinLED, OUTPUT);
+        om::pinMode(pinLED, OUTPUT);
     }
     blinkLED = true;
 }
 
 void MonitorThread::LED(uint8_t value) {
     if (pinLED != NOPIN) {
-        MilliThreads::digitalWrite(pinLED, value ? HIGH : LOW);
+        om::digitalWrite(pinLED, value ? HIGH : LOW);
     }
 }
 
 void MonitorThread::Error(const char *msg, int value) {
     LED(HIGH);
     for (int i = 0; i < 20; i++) {
-        MilliThreads::serial_print('>');
+        om::print('>');
     }
-    MilliThreads::serial_print(msg);
-    MilliThreads::serial_println(value);
+    om::print(msg);
+    om::println(value);
 }
 
 void MonitorThread::loop() {
@@ -98,20 +98,20 @@ void MonitorThread::loop() {
     if (nTardies > 50) {
         Error("T", nTardies);
         for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-            MilliThreads::serial_print(pThread->id);
-            MilliThreads::serial_print(":");
-            MilliThreads::serial_print(pThread->tardies, DEC);
+            om::print(pThread->id);
+            om::print(":");
+            om::print(pThread->tardies, DEC);
             pThread->tardies = 0;
-            MilliThreads::serial_print(" ");
+            om::print(" ");
         }
-        MilliThreads::serial_println('!');
+        om::println('!');
     } else if (nTardies > 20) {
         LED(HIGH);
         verbose = true;
     }
     if (isHigh) {
         if (verbose) {
-            MilliThreads::serial_print(".");
+            om::print(".");
         }
         nTardies = 0;
     }
@@ -119,9 +119,9 @@ void MonitorThread::loop() {
 #endif
 }
 
-MonitorThread MilliThreads::monitor;
+MonitorThread om::monitor;
 
-void MilliThreads::Error(const char *msg, int value) {
+void om::Error(const char *msg, int value) {
     monitor.Error(msg, value);
 }
 
@@ -144,18 +144,18 @@ void ThreadRunner::setup(int pinLED) {
     ThreadEnable(true);
 }
 
-void MilliThreads::ThreadEnable(bool enable) {
+void om::ThreadEnable(bool enable) {
 #ifdef DEBUG_ThreadENABLE
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
-        MilliThreads::serial_print(pThread->id);
-        MilliThreads::serial_print(":");
-        MilliThreads::serial_print(pThread->nextLoop.ticks, DEC);
-        MilliThreads::serial_print(" ");
+        om::print(pThread->id);
+        om::print(":");
+        om::print(pThread->nextLoop.ticks, DEC);
+        om::print(" ");
     }
 #endif
 }
 
-MilliThreads::Ticks MilliThreads::ticks() {
+om::Ticks om::ticks() {
 #if defined(TEST)
     arduino.timer64us(1);
 #endif

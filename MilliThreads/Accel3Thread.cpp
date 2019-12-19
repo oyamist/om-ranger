@@ -2,27 +2,27 @@
 #ifdef CMAKE
 #include <cstring>
 #endif 
-#include "MilliThreads.h"
+#include "OMilli.h"
 #include "BMA250.h"       
 #include "Accel3Thread.h"
 
-using namespace MilliThreads;
-using namespace MilliThreads;
+using namespace om;
+using namespace om;
 
-namespace MilliThreads {
+namespace om {
   
 //////////////////// XYZ ////////////////////
 
 void XYZ::print() {
-    serial_print("{x:");
-    serial_print(this->x);
+    om::print("{x:");
+    om::print(this->x);
 
-    serial_print(",y:");
-    serial_print(this->y);
+    om::print(",y:");
+    om::print(this->y);
 
-    serial_print(",z:");
-    serial_print(this->z);
-    serial_println("}");
+    om::print(",z:");
+    om::print(this->z);
+    om::println("}");
 }
 
 struct XYZ XYZ::mapMin(XYZ that) {
@@ -93,11 +93,11 @@ void SweepCycle::print() {
       prefix = "--:-";
       break;
     }
-    MilliThreads::serial_print(prefix);
-    MilliThreads::serial_print(id);
-    MilliThreads::serial_print(suffix);
-    MilliThreads::serial_print(" ");
-    MilliThreads::serial_print(nextHeading);
+    om::print(prefix);
+    om::print(id);
+    om::print(suffix);
+    om::print(" ");
+    om::print(nextHeading);
 }
 
 //////////////////// Accel3Thread ////////////////////
@@ -115,18 +115,18 @@ void Accel3Thread::setup() {
     id = 'M';
     Thread::setup();
     accel_sensor.begin(BMA250_range_2g, BMA250_update_time_32ms); 
-    serial_print("Accel3Thread.setup");
+    om::print("Accel3Thread.setup");
 }
 
 void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
     if (v <= 13) { 
-        serial_print(s1);
+        om::print(s1);
     } else if (v <= 50) { 
-        serial_print(s2);
+        om::print(s2);
     } else if (v <= 87) { 
-        serial_print(s3);
+        om::print(s3);
     } else {
-        serial_print(s4);
+        om::print(s4);
     }
 }
 
@@ -160,15 +160,15 @@ void Accel3Thread::loop() {
 
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {
-        serial_print("ERROR! NO BMA250 DETECTED!");
+        om::print("ERROR! NO BMA250 DETECTED!");
     } else { 
         if ((iSample % 10) == 0) {
             xCycle.print();
-            serial_print(" ");
-            serial_print((int16_t)(xyz[iSample].x-curXYZ.x));
-            serial_print("\n");
+            om::print(" ");
+            om::print((int16_t)(xyz[iSample].x-curXYZ.x));
+            om::print("\n");
         }
     }
 }
 
-} // MilliThreads
+} // om

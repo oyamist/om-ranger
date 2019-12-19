@@ -3,7 +3,7 @@
 
 #include "Thread.h"
 
-namespace MilliThreads {
+namespace om {
 
 #define DRV2605_STRONG_CLICK_30 3
 #define DRV2605_SHARP_CLICK 4
@@ -68,6 +68,6 @@ protected:
 
 extern LraThread lraThread;
 
-} // namespace MilliThreads
+} // namespace om
 
 #endif

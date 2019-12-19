@@ -4,7 +4,7 @@
 #include "Thread.h"
 #include "Accel3Thread.h"
 
-namespace MilliThreads {
+namespace om {
 
 #define VL53L0X_PERIOD 33
 
@@ -21,6 +21,6 @@ protected:
 
 extern RangeThread rangeThread;
 
-} // namespace MilliThreads
+} // namespace om
 
 #endif

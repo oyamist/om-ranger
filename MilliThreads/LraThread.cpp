@@ -7,10 +7,9 @@
 #include <Wire.h>             // For using I2C communication
 #include "Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
 
-using namespace MilliThreads;
-using namespace MilliThreads;
+using namespace om;
 
-namespace MilliThreads {
+namespace om {
 
 LraThread lraThread; // Haptic feedback
 
@@ -24,11 +23,11 @@ LraThread::LraThread(uint16_t msLoop, uint8_t port)
 void LraThread::setup() {
     id = 'L';
     Thread::setup();
-    MilliThreads::pinMode(powerPin, OUTPUT);
-    MilliThreads::digitalWrite(powerPin, HIGH);
+    om::pinMode(powerPin, OUTPUT);
+    om::digitalWrite(powerPin, HIGH);
     drv.begin();
     drv.selectLibrary(1);
-    serial_print("LraThread.setup");
+    om::print("LraThread.setup");
 }
 
 void LraThread::buzz(uint8_t level) {
@@ -56,7 +55,7 @@ void LraThread::playWaveform() {
 void LraThread::loop() {
     nextLoop.ticks = ticks() + MS_TICKS(msLoop);
 
-    MilliThreads::setI2CPort(port); // Tiny Adapter port
+    om::setI2CPort(port); // Tiny Adapter port
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);
@@ -66,4 +65,4 @@ void LraThread::loop() {
     }
 }
 
-} // MilliThreads
+} // om

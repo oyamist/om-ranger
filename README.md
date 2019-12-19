@@ -1,4 +1,4 @@
-# OM-Ranger - An IR Ranging Visual Assistance Support Cane
+# OM-Ranger - An Infrared Visual Assistance Support Cane
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.

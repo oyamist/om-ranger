@@ -1,0 +1,35 @@
+{
+  "name": "oya-scan",
+  "version": "0.1.0",
+  "description": "OM-Ranger: An Infrared Support Want",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  },
+  "repository": {
+    "tag": "git"
+  },
+  "bin": {},
+  "keywords": [
+    "TinyCircuits",
+    "TinyZero",
+    "Time-of-flight",
+    "TOF",
+    "Blind",
+    "Support cane",
+    "Infrared",
+    "Haptic",
+    "Visual Assistance",
+    "OMilli",
+    "Arduino"
+  ],
+  "author": "Karl Lew",
+  "homepage": "https://github.com/oyamist/om-ranger",
+  "license": "MIT"
+}

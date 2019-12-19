@@ -7,8 +7,8 @@
 #include "Thread.h"
 #include "OMilli.h"
 #include "OLED042Thread.h"
-#include "tinycircuits/Font_042.h"  // The font displayed on the screen
-#include "tinycircuits/TinyCircuits_HP7240.h"    // Library for OLED screen
+#include "src/tinycircuits/Font_042.h"  // The font displayed on the screen
+#include "src/tinycircuits/TinyCircuits_HP7240.h"    // Library for OLED screen
 
 using namespace om;
 

@@ -1,5 +1,5 @@
-#ifndef FIREDUINO_TINYZERO_H
-#define FIREDUINO_TINYZERO_H
+#ifndef OM_TINYZERO_H
+#define OM_TINYZERO_H
 
 #include <Arduino.h>
 
@@ -18,19 +18,19 @@ namespace om {
 	inline void serial_begin(int32_t baud) {
 		SerialUSB.begin(baud);
 	}
-	inline void om::print(const char *value) {
+	inline void print(const char *value) {
 		SerialUSB.print(value);
 	}
-	inline void om::print(const char value) {
+	inline void print(const char value) {
 		SerialUSB.print(value);
 	}
-  inline void om::print(int16_t value, int16_t format = DEC) {
+  inline void print(int16_t value, int16_t format = DEC) {
     SerialUSB.print(value, format);
   }
-  inline void om::print(uint8_t value, int16_t format = DEC) {
+  inline void print(uint8_t value, int16_t format = DEC) {
     SerialUSB.print(value, format);
   }
-  inline void om::print(double value, int16_t format = 3) {
+  inline void print(double value, int16_t format = 3) {
     SerialUSB.print(value, format);
   }
   inline void pinMode(int16_t pin, int16_t inout) {

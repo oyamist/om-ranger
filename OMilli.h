@@ -53,17 +53,19 @@ namespace om { // abstract API implementable any way you like
 #endif
 
 ////////////////////// API Extensions ////////////////////
-inline void om:println() {
-    om::print('\n');
-}
-inline void om:println(const char value) {
-    om::print(value);
-    om::print('\n');
-}
-inline void om:println(const char* value) {
-    om::print(value);
-    om::print('\n');
-}
+namespace om {
+    inline void println() {
+        om::print('\n');
+    }
+    inline void println(const char value) {
+        om::print(value);
+        om::print('\n');
+    }
+    inline void println(const char* value) {
+        om::print(value);
+        om::print('\n');
+    }
+} // namespace om
 
 
 // Testing macros are useful for MOCK_ARDUINO 

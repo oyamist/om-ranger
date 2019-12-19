@@ -5,7 +5,7 @@
 #include "LraThread.h"
 
 #include <Wire.h>             // For using I2C communication
-#include "Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
+#include "src/adafruit/Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
 
 using namespace om;
 

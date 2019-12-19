@@ -1,7 +1,7 @@
 #include <inttypes.h>
 #include <Arduino.h>
 #include <Wire.h>
-#include "tinycircuits/BMA250.h"
+#include "BMA250.h"
 
 BMA250::BMA250()
 {

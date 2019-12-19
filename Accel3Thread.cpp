@@ -3,7 +3,7 @@
 #include <cstring>
 #endif 
 #include "OMilli.h"
-#include "tinycircuits/BMA250.h"       
+#include "src/tinycircuits/BMA250.h"       
 #include "Accel3Thread.h"
 
 using namespace om;

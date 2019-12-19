@@ -7,10 +7,10 @@
 #include <Wire.h>             // For using I2C communication
 #include "Adafruit_DRV2605.h" // For interfacing with the DRV2605 chip
 
-using namespace tinythreads;
+using namespace MilliThreads;
 using namespace MilliThreads;
 
-namespace tinythreads {
+namespace MilliThreads {
 
 LraThread lraThread; // Haptic feedback
 
@@ -66,4 +66,4 @@ void LraThread::loop() {
     }
 }
 
-} // tinythreads
+} // MilliThreads

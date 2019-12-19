@@ -6,10 +6,10 @@
 #include "BMA250.h"       
 #include "Accel3Thread.h"
 
-using namespace tinythreads;
+using namespace MilliThreads;
 using namespace MilliThreads;
 
-namespace tinythreads {
+namespace MilliThreads {
   
 //////////////////// XYZ ////////////////////
 
@@ -171,4 +171,4 @@ void Accel3Thread::loop() {
     }
 }
 
-} // tinythreads
+} // MilliThreads

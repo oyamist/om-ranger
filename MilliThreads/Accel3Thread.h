@@ -3,7 +3,7 @@
 
 #include "Thread.h"
 
-namespace tinythreads {
+namespace MilliThreads {
 
 typedef struct XYZ {
     int16_t x=0, y=0, z=0;
@@ -79,6 +79,6 @@ protected:
 
 
 extern Accel3Thread accelThread;
-} // namespace tinythreads
+} // namespace MilliThreads
 
 #endif

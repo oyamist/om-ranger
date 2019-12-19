@@ -5,7 +5,7 @@
 extern uint32_t MilliThreads_timer;
 extern void MilliThreads_timer_handler();
 
-namespace tinythreads {
+namespace MilliThreads {
 
 extern int16_t leastFreeRam;
 
@@ -153,6 +153,6 @@ extern ThreadRunner threadRunner;
 
 extern Ticks ticks();
 
-} // namespace tinythreads
+} // namespace MilliThreads
 
 #endif

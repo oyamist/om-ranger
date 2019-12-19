@@ -7,10 +7,10 @@
 #include "LraThread.h"
 #include "RangeThread.h"
 
-using namespace tinythreads;
+using namespace MilliThreads;
 using namespace MilliThreads;
 
-namespace tinythreads {
+namespace MilliThreads {
 
 RangeThread rangeThread;
 
@@ -48,4 +48,4 @@ void RangeThread::loop() {
     }
 }
 
-} // tinythreads
+} // MilliThreads

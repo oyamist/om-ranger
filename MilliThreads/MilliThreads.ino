@@ -7,7 +7,7 @@
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
-using namespace tinythreads;
+using namespace MilliThreads;
 
 void setup() { // run once, when the sketch starts
     // Serial I/O has lowest priority, so you may need to
@@ -17,6 +17,7 @@ void setup() { // run once, when the sketch starts
     SerialUSB.println("MilliThreads.setup()");
     
     Wire.begin();
+    Wire.setClock(400000);
 
     // Initialize
 	accelThread.setup();

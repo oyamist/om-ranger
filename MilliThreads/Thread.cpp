@@ -1,11 +1,11 @@
 #include <Arduino.h>
 #include "Thread.h"
 
-using namespace tinythreads;
+using namespace MilliThreads;
 
 #define MAX_THREADS 32
 
-namespace tinythreads {
+namespace MilliThreads {
     ThreadRunner 	threadRunner;
     struct Thread *	pThreadList;
     int 			nThreads;
@@ -119,9 +119,9 @@ void MonitorThread::loop() {
 #endif
 }
 
-MonitorThread tinythreads::monitor;
+MonitorThread MilliThreads::monitor;
 
-void tinythreads::Error(const char *msg, int value) {
+void MilliThreads::Error(const char *msg, int value) {
     monitor.Error(msg, value);
 }
 
@@ -144,7 +144,7 @@ void ThreadRunner::setup(int pinLED) {
     ThreadEnable(true);
 }
 
-void tinythreads::ThreadEnable(bool enable) {
+void MilliThreads::ThreadEnable(bool enable) {
 #ifdef DEBUG_ThreadENABLE
     for (ThreadPtr pThread = pThreadList; pThread; pThread = pThread->pNext) {
         MilliThreads::serial_print(pThread->id);
@@ -155,7 +155,7 @@ void tinythreads::ThreadEnable(bool enable) {
 #endif
 }
 
-tinythreads::Ticks tinythreads::ticks() {
+MilliThreads::Ticks MilliThreads::ticks() {
 #if defined(TEST)
     arduino.timer64us(1);
 #endif

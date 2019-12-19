@@ -31,6 +31,9 @@ OLED042Thread::OLED042Thread(uint16_t msLoop, uint8_t port)
         resetPin = A0;
         break;
     }
+    for (var i = 0; i < OLED042_LINES; i++) {
+        sprintf(lines[i], "hello %d", i);
+    }
 }
 
 void OLED042Thread::setup() {
@@ -47,9 +50,9 @@ void OLED042Thread::loop() {
     clearOLED(); // Important for animations or scrolling text
     textPos = ((nextLoop.loops%3)+1)*72;
     TiniestScreen.setCursorX(textPos);
-    char msg[100];
-    sprintf(msg, "Hello %d", nextLoop.loops);
-    TiniestScreen.printSSD(oledbuf, msg); 
+    for (var i = 0; i < OLED042_LINES: i++) {
+        TiniestScreen.printSSD(oledbuf, lines[i]); 
+    }
     TiniestScreen.sendFramebuffer(oledbuf);
 }
 

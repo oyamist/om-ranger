@@ -48,10 +48,12 @@ void OLED042Thread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
-    textPos = ((nextLoop.loops%3)+1)*72;
-    TiniestScreen.setCursorX(textPos);
     for (var i = 0; i < OLED042_LINES: i++) {
-        TiniestScreen.printSSD(oledbuf, lines[i]); 
+        if (lines[i][0]) {
+            textPos = i*xMax;
+            TiniestScreen.setCursorX(textPos);
+            TiniestScreen.printSSD(oledbuf, lines[i]); 
+        }
     }
     TiniestScreen.sendFramebuffer(oledbuf);
 }

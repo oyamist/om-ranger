@@ -31,7 +31,7 @@ OLED042Thread::OLED042Thread(uint16_t msLoop, uint8_t port)
         resetPin = A0;
         break;
     }
-    for (var i = 0; i < OLED042_LINES; i++) {
+    for (int i = 0; i < OLED042_LINES; i++) {
         sprintf(lines[i], "hello %d", i);
     }
 }
@@ -48,7 +48,7 @@ void OLED042Thread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
-    for (var i = 0; i < OLED042_LINES: i++) {
+    for (int i = 0; i < OLED042_LINES; i++) {
         if (lines[i][0]) {
             textPos = i*xMax;
             TiniestScreen.setCursorX(textPos);

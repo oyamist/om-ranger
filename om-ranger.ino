@@ -24,7 +24,7 @@ void setup() { // run once, when the sketch starts
 	  accelThread.setup();
     lraThread.setup();
     rangeThread.setup();
-    oledThread.setup();
+    oledThread.setup(250);
     om::pinMode(LED_BUILTIN, OUTPUT);
     om::println("threadRunner.setup");
     threadRunner.setup(LED_BUILTIN);

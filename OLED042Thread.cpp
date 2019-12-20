@@ -36,8 +36,9 @@ OLED042Thread::OLED042Thread(uint16_t msLoop, uint8_t port)
     }
 }
 
-void OLED042Thread::setup() {
+void OLED042Thread::setup(uint16_t msLoop) {
     id = 'D';
+    this->msLoop = msLoop;
     Thread::setup();
     Wireling.begin();
     Wireling.selectPort(port);  // 
@@ -48,6 +49,7 @@ void OLED042Thread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
+    sprintf(lines[0], "%d", nextLoop.loops);
     for (int i = 0; i < OLED042_LINES; i++) {
         if (lines[i][0]) {
             textPos = i*xMax;

@@ -13,7 +13,7 @@
 typedef class OLED042Thread : om::Thread {
 public:
     OLED042Thread(uint16_t msLoop=1000, uint8_t port=I2CPORT_DISPLAY);
-    void setup();
+    void setup(uint16_t msLoop);
     void initScreen(void);
     void setPixel(int px, int py);
     void clearOLED();

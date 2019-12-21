@@ -42,14 +42,15 @@ struct XYZ XYZ::mapMax(XYZ that) {
 
 SweepCycle::SweepCycle(char id) : id(id) {}
 
+#define SWEEP_END 15
 void SweepCycle::setHeading(int16_t rank, bool damped) {
     if (damped) {
         heading = 0;
-    } else if (rank <= 13) {
+    } else if (rank <= SWEEP_END) {
         heading = -2;
     } else if (rank <= 50) {
         heading = -1;
-    } else if (rank <= 87) {
+    } else if (rank <= 100 - SWEEP_END) {
         heading = 1;
     } else {
         heading = 2;

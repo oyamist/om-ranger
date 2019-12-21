@@ -58,7 +58,7 @@ public:
     void print();
 } SweepCycle;
 
-#define ACCEL_SAMPLES 96
+#define ACCEL_SAMPLES 32 /* 960 ms */
 
 typedef class Accel3Thread : om::Thread {
 public:

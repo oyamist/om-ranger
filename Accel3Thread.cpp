@@ -45,20 +45,20 @@ SweepCycle::SweepCycle(char id) : id(id) {}
 #define SWEEP_END 15
 void SweepCycle::setHeading(int16_t rank, bool damped) {
     if (damped) {
-        heading = 0;
+        heading = HEADING_IDLE;
     } else if (rank <= SWEEP_END) {
-        heading = -2;
+        heading = HEADING_LFT;
     } else if (rank <= 50) {
-        heading = -1;
+        heading = HEADING_CTR_LFT;
     } else if (rank <= 100 - SWEEP_END) {
-        heading = 1;
+        heading = HEADING_CTR_RHT;
     } else {
-        heading = 2;
+        heading = HEADING_RHT;
     }
     if (heading == nextHeading) {
         om::Ticks now = om::ticks();
         if (now - lastCycle > MAX_CYCLE_TICKS) {
-            heading = 0;
+            heading = HEADING_IDLE;
         }
         nextHeading = nextHeading == HEADING_RHT 
             ? HEADING_LFT : HEADING_RHT;
@@ -67,33 +67,21 @@ void SweepCycle::setHeading(int16_t rank, bool damped) {
 }
 
 void SweepCycle::print() {
-    char *prefix = "";
-    char *suffix = "";
-    switch (heading) {
-    case -2: 
-      suffix = "-:--";
-      break;
-    case -1:
-      prefix = "-";
-      suffix = ":--";
-      break;
-    case 0:
-      prefix = "--";
-      suffix = "--";
-      break;
-    case 1:
-      prefix = "--:";
-      suffix = "-";
-      break;
-    case 2:
-      prefix = "--:-";
-      break;
-    }
-    om::print(prefix);
-    om::print(id);
-    om::print(suffix);
+    char buf[6];
+    this->headingToString(buf);
+    om::print(buf);
     om::print(" ");
     om::print(nextHeading);
+}
+
+void SweepCycle::headingToString(char [] buf) {
+    switch (heading) {
+    case HEADING_LFT: sprintf(buf, "%c-:--", id); break;
+    case HEADING_CTR_LFT: sprintf(buf, "-%c:--", id); break;
+    case HEADING_IDLE: sprintf(buf, "--%c--", id); break;
+    case HEADING_CTR_RHT: sprintf(buf, "--:%c-", id); break;
+    case HEADING_RHT: sprintf(buf, "--:-%c", id); break;
+    default: sprintf(buf, "??%c??", id); break;
 }
 
 //////////////////// Accel3Thread ////////////////////

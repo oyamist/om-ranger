@@ -55,6 +55,7 @@ public:
     Heading heading = HEADING_IDLE;
 
     void setHeading(int16_t rank, bool damped);
+    voit headingToString(char buf[]);
     void print();
 } SweepCycle;
 

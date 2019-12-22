@@ -4,6 +4,7 @@
 #endif 
 #include <Wire.h>
 #include "Accel3Thread.h"
+#include "OLED042Thread.h"
 #include "LraThread.h"
 #include "RangeThread.h"
 
@@ -26,22 +27,8 @@ void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     // Sweep ranging pulses within range
     // Static ranging pulses with period proportionate to range
-    switch (accelThread.xCycle.heading) {
-        case -2: // left
-            break;
-        case -1: // center left
-            break;
-        case 0: // damped static ranging
-            if ((nextLoop.loops % 32) == 0) { // 
-                lraThread.setEffect(DRV2605_SHARP_TICK_3);
-                om::println("static range");
-            }
-            break;
-        case 1: // center right 
-            break;
-        case 2: // right
-            lraThread.setEffect(DRV2605_SHARP_TICK_3);
-          //  om::println("dynamic range");
-            break;
-    }
+    char ** lines = oledThread.lines;
+    accelThread.xCycle.headingToString(lines[0]);
+    accelThread.yCycle.headingToString(lines[1]);
+    accelThread.zCycle.headingToString(lines[2]);
 }

@@ -27,8 +27,8 @@ void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     // Sweep ranging pulses within range
     // Static ranging pulses with period proportionate to range
-    char ** lines = oledThread.lines;
-    accelThread.xCycle.headingToString(lines[0]);
-    accelThread.yCycle.headingToString(lines[1]);
-    accelThread.zCycle.headingToString(lines[2]);
+    oledThread.lines[1][0] = 0;
+    accelThread.xCycle.headingToString(oledThread.lines[2]);
+    accelThread.yCycle.headingToString(oledThread.lines[3]);
+    accelThread.zCycle.headingToString(oledThread.lines[4]);
 }

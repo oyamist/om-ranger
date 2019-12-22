@@ -42,7 +42,7 @@ struct XYZ XYZ::mapMax(XYZ that) {
 
 SweepCycle::SweepCycle(char id) : id(id) {}
 
-#define SWEEP_END 15
+#define SWEEP_END 20
 void SweepCycle::setHeading(int16_t rank, bool damped) {
     if (damped) {
         heading = HEADING_IDLE;
@@ -74,7 +74,7 @@ void SweepCycle::print() {
     om::print(nextHeading);
 }
 
-void SweepCycle::headingToString(char [] buf) {
+void SweepCycle::headingToString(char *buf) {
     switch (heading) {
     case HEADING_LFT: sprintf(buf, "%c-:--", id); break;
     case HEADING_CTR_LFT: sprintf(buf, "-%c:--", id); break;
@@ -82,6 +82,7 @@ void SweepCycle::headingToString(char [] buf) {
     case HEADING_CTR_RHT: sprintf(buf, "--:%c-", id); break;
     case HEADING_RHT: sprintf(buf, "--:-%c", id); break;
     default: sprintf(buf, "??%c??", id); break;
+    }
 }
 
 //////////////////// Accel3Thread ////////////////////
@@ -100,18 +101,6 @@ void Accel3Thread::setup() {
     Thread::setup();
     accel_sensor.begin(BMA250_range_2g, BMA250_update_time_32ms); 
     om::print("Accel3Thread.setup");
-}
-
-void rankPrint(int v, char *s1, char *s2, char *s3, char *s4) {
-    if (v <= 13) { 
-        om::print(s1);
-    } else if (v <= 50) { 
-        om::print(s2);
-    } else if (v <= 87) { 
-        om::print(s3);
-    } else {
-        om::print(s4);
-    }
 }
 
 void Accel3Thread::loop() {

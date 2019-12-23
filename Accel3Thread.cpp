@@ -46,20 +46,25 @@ SweepCycle::SweepCycle(char id, bool invert)
 
 #define SWEEP_END 20
 void SweepCycle::setHeading(int16_t rank, bool damped) {
+    Heading h;
     if (damped) {
-        heading = HEADING_IDLE;
+        h = HEADING_IDLE;
     } else if (rank <= SWEEP_END) {
-        heading = HEADING_LFT;
+        h = HEADING_LFT;
     } else if (rank <= 50) {
-        heading = HEADING_CTR_LFT;
+        h = HEADING_CTR_LFT;
     } else if (rank <= 100 - SWEEP_END) {
-        heading = HEADING_CTR_RHT;
+        h = HEADING_CTR_RHT;
     } else {
-        heading = HEADING_RHT;
+        h = HEADING_RHT;
     }
     if (invert) {
-        heading = -heading;
+        h = -h;
     }
+    if (h*heading < 0) {
+      center = true;
+    }
+    heading = h;
     if (heading == nextHeading) {
         om::Ticks now = om::ticks();
         if (now - lastCycle > MAX_CYCLE_TICKS) {

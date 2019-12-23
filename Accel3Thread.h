@@ -54,6 +54,7 @@ public:
     om::Ticks lastCycle = 0;
     Heading nextHeading = HEADING_RHT;
     Heading heading = HEADING_IDLE;
+    bool center = false;
 
     void setHeading(int16_t rank, bool damped);
     void headingToString(char * buf);

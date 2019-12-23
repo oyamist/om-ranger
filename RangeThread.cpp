@@ -27,7 +27,14 @@ void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     // Sweep ranging pulses within range
     // Static ranging pulses with period proportionate to range
-    oledThread.lines[1][0] = 0;
+    int32_t cycleTicks = om::ticks() - accelThread.xCycle.lastCycle;
+    if (accelThread.xCycle.center ) {
+        accelThread.xCycle.center = false;
+        if (0 < cycleTicks && cycleTicks < 3000) {
+          lraThread.setEffect(DRV2605_SHARP_TICK_3);
+        }
+    }
+    strcpy(oledThread.lines[1], "");
     accelThread.xCycle.headingToString(oledThread.lines[2]);
     accelThread.yCycle.headingToString(oledThread.lines[3]);
     accelThread.zCycle.headingToString(oledThread.lines[4]);

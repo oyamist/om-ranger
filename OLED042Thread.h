@@ -9,11 +9,14 @@
  */
 #define OLED042_LINES 5
 #define OLED042_LINECHARS 12
+#define OLED_FRAMERATE 250 /* Be nice to other threads*/
 
 typedef class OLED042Thread : om::Thread {
 public:
-    OLED042Thread(uint16_t msLoop=1000, uint8_t port=I2CPORT_DISPLAY);
-    void setup(uint16_t msLoop);
+    OLED042Thread();
+    void setup(
+        uint8_t port=I2CPORT_DISPLAY, 
+        uint16_t msLoop=OLED_FRAMERATE);
     void initScreen(void);
     void setPixel(int px, int py);
     void clearOLED();

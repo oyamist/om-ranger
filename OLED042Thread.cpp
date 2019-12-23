@@ -19,9 +19,11 @@ TinyCircuits_HP7240 TiniestScreen;  // 0.42" Wireling screen
 
 uint8_t oledbuf[HP7240_BUFFERSIZE]; // Buffer to hold screen data
 
-OLED042Thread::OLED042Thread(uint16_t msLoop, uint8_t port)
-    : msLoop(msLoop), port(port)
-{
+OLED042Thread::OLED042Thread() {}
+
+void OLED042Thread::setup(uint8_t port, uint16_t msLoop);
+    id = 'D';
+    Thread::setup();
     switch (port) {
     case 0: resetPin = A0; break;
     case 1: resetPin = A1; break;
@@ -32,14 +34,9 @@ OLED042Thread::OLED042Thread(uint16_t msLoop, uint8_t port)
         break;
     }
     for (int i = 0; i < OLED042_LINES; i++) {
-        sprintf(lines[i], "hello %d", i);
+        sprintf(lines[i], "OM-Ranger %d", i);
     }
-}
-
-void OLED042Thread::setup(uint16_t msLoop) {
-    id = 'D';
     this->msLoop = msLoop;
-    Thread::setup();
     Wireling.begin();
     Wireling.selectPort(port);  // 
     initScreen(); // Initialize the Screen

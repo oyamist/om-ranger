@@ -5,6 +5,9 @@
 #include "LraThread.h"
 #include "RangeThread.h"
 #include "OLED042Thread.h"
+#include "LEDThread.h"
+
+#define DISPLAY_OLED false
 
 ///////////////////// CHOOSE DEFAULT PIN CONFIGURATION ///////////
 
@@ -18,15 +21,22 @@ void setup() { // run once, when the sketch starts
     om::println("om.setup()");
     
     Wire.begin();
-    Wire.setClock(400000);
+
+    // Fast I2C for high bandwidth but short transmission lengths
+    Wire.setClock(400000); 
 
     // Initialize
-	  accelThread.setup();
+	accelThread.setup();
     lraThread.setup();
     rangeThread.setup();
-    oledThread.setup(250);
-    om::pinMode(LED_BUILTIN, OUTPUT);
+    if (DISPLAY_OLED) { // Mutually exclusive I2CPORT_DISPLAY
+        oledThread.setup(I2CPORT_DISPLAY, OLED_FRAMERATE);
+    } else {
+        ledThread.setup(I2CPORT_DISPLAY, LED_FRAMERATE_PLA);
+    }
     om::println("threadRunner.setup");
+
+    om::pinMode(LED_BUILTIN, OUTPUT);
     threadRunner.setup(LED_BUILTIN);
 }
 

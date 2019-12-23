@@ -3,8 +3,6 @@
 
 #include <Arduino.h>
 
-extern int __heap_start, *__brkval;
-
 namespace om {
 	inline Print& get_Print() {
 		return SerialUSB;
@@ -56,14 +54,6 @@ namespace om {
 	}
 	inline uint32_t millis() {
 		return ::millis();
-	}
-
-	inline int16_t freeRam () {
-		int v;
-		return (int)(size_t)&v - (__brkval == 0 
-            ? (int)(size_t)&__heap_start 
-            : (int)(size_t)__brkval
-        );
 	}
 
     void setI2CPort(uint8_t port);

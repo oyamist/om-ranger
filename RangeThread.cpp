@@ -5,6 +5,7 @@
 #include <Wire.h>
 #include "Accel3Thread.h"
 #include "OLED042Thread.h"
+#include "LEDThread.h"
 #include "LraThread.h"
 #include "RangeThread.h"
 
@@ -31,7 +32,9 @@ void RangeThread::loop() {
     if (accelThread.xCycle.center ) {
         accelThread.xCycle.center = false;
         if (0 < cycleTicks && cycleTicks < 3000) {
-          lraThread.setEffect(DRV2605_SHARP_TICK_3);
+            lraThread.setEffect(DRV2605_SHARP_TICK_3);
+            ledThread.leds[0] = CRGB(0,255,0);
+            ledThread.show(SHOWLED_FADE50);
         }
     }
     strcpy(oledThread.lines[1], "");

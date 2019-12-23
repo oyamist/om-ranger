@@ -40,7 +40,9 @@ struct XYZ XYZ::mapMax(XYZ that) {
 
 #define MAX_CYCLE_TICKS 1500
 
-SweepCycle::SweepCycle(char id) : id(id) {}
+SweepCycle::SweepCycle(char id, bool invert) 
+    : id(id), invert(invert) 
+{}
 
 #define SWEEP_END 20
 void SweepCycle::setHeading(int16_t rank, bool damped) {
@@ -54,6 +56,9 @@ void SweepCycle::setHeading(int16_t rank, bool damped) {
         heading = HEADING_CTR_RHT;
     } else {
         heading = HEADING_RHT;
+    }
+    if (invert) {
+        heading = -heading;
     }
     if (heading == nextHeading) {
         om::Ticks now = om::ticks();

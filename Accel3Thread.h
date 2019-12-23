@@ -47,7 +47,8 @@ typedef int16_t Heading;
 
 typedef class SweepCycle {
 public:
-    SweepCycle(char id);
+    SweepCycle(char id, bool invert=false);
+    bool invert;
     char id;
     uint16_t cycles = 0;
     om::Ticks lastCycle = 0;
@@ -66,9 +67,9 @@ public:
     Accel3Thread(uint16_t msLoop=32, int16_t damping=10);
     void setup();
     void loop();
-    SweepCycle xCycle = SweepCycle('x');
-    SweepCycle yCycle = SweepCycle('y');
-    SweepCycle zCycle = SweepCycle('z');
+    SweepCycle xCycle = SweepCycle('x', false); // positive right
+    SweepCycle yCycle = SweepCycle('y', false); // positive forward
+    SweepCycle zCycle = SweepCycle('z', true);  // positive up
 
 protected:
     int16_t damping;

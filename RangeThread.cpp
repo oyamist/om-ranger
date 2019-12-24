@@ -33,10 +33,11 @@ void RangeThread::loop() {
         accelThread.xCycle.center = false;
         if (0 < cycleTicks && cycleTicks < 3000) {
             lraThread.setEffect(DRV2605_SHARP_TICK_3);
-            ledThread.leds[0] = CRGB(0,255,0);
+            ledThread.leds[0] = CRGB(0,128,0);
             ledThread.show(SHOWLED_FADE50);
         }
     }
+    
     strcpy(oledThread.lines[1], "");
     accelThread.xCycle.headingToString(oledThread.lines[2]);
     accelThread.yCycle.headingToString(oledThread.lines[3]);

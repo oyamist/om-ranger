@@ -21,8 +21,10 @@ uint8_t oledbuf[HP7240_BUFFERSIZE]; // Buffer to hold screen data
 
 OLED042Thread::OLED042Thread() {}
 
-void OLED042Thread::setup(uint8_t port, uint16_t msLoop);
+void OLED042Thread::setup(uint8_t port, uint16_t msLoop){
     id = 'D';
+    this->port = port;
+    this->msLoop = msLoop;
     Thread::setup();
     switch (port) {
     case 0: resetPin = A0; break;
@@ -36,7 +38,6 @@ void OLED042Thread::setup(uint8_t port, uint16_t msLoop);
     for (int i = 0; i < OLED042_LINES; i++) {
         sprintf(lines[i], "OM-Ranger %d", i);
     }
-    this->msLoop = msLoop;
     Wireling.begin();
     Wireling.selectPort(port);  // 
     initScreen(); // Initialize the Screen

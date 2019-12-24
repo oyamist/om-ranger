@@ -13,13 +13,13 @@
 typedef class LEDThread : om::Thread {
 public:
     LEDThread();
-    void setup(uint8_t port=I2CPORT_DISPLAY, uint16_t msLoop=FRAMERATE_PLA);
+    void setup(uint8_t port=I2CPORT_DISPLAY, uint16_t msLoop=LED_FRAMERATE_PLA);
     CRGB leds[NUM_LEDS];
-    void show(int16_t effect, int16_t brightness=255, int16_t msPeriod=msLoop);
+    void show(int16_t effect, int16_t brightness=255, int16_t msPeriod=LED_FRAMERATE_PLA);
 
 protected:
     void loop();
-    uint8_t ledPin = A0;
+    uint8_t ledPin;
     int16_t msLoop;
     uint8_t port;
     int16_t msPeriod;

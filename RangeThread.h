@@ -9,7 +9,7 @@
 typedef class RangeThread : om::Thread {
 public:
     RangeThread(uint16_t msLoop=VL53L0X_PERIOD, uint8_t port=2);
-    void setup();
+    void setup(uint8_t port);
     
 protected:
     uint8_t port;

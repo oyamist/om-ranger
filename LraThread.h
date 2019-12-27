@@ -45,14 +45,15 @@
 #define DRV2605_TRANSITION_RAMP_UP_LONG_SHARP_2 89
 #define DRV2605_TRANSITION_RAMP_UP_LONG_SHARP_2 89
 #define DRV2605_TRANSITION_RAMP_UP_SHORT_SHARP_1_100 92
+#define DRV2605_SMOOTH_HUM_5 123
 
 
 typedef class LraThread : om::Thread {
 public:
     LraThread(uint16_t msLoop=50, uint8_t port=I2CPORT_LRA);
-    void buzz(uint8_t level);
+    void buzz(uint8_t port);
     void setEffect(uint8_t effect, uint8_t count=1);
-    void setup();
+    void setup(uint8_t port);
 
 protected:
     uint8_t port;

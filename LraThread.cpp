@@ -16,9 +16,10 @@ LraThread::LraThread(uint16_t msLoop, uint8_t port)
     : msLoop(msLoop), level(0), effect(0), count(0), port(port)
 {}
 
-void LraThread::setup() {
+void LraThread::setup(uint8_t port) {
     id = 'L';
     Thread::setup();
+    this->port = port;
     om::pinMode(powerPin, OUTPUT);
     om::digitalWrite(powerPin, HIGH);
     drv.begin();

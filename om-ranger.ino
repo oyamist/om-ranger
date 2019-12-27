@@ -26,13 +26,13 @@ void setup() { // run once, when the sketch starts
     Wire.setClock(400000); 
 
     // Initialize
-	accelThread.setup();
-    lraThread.setup();
-    rangeThread.setup();
+    accelThread.setup();
+    lraThread.setup(1);
+    rangeThread.setup(0);
     if (DISPLAY_OLED) { // Mutually exclusive I2CPORT_DISPLAY
-        oledThread.setup(I2CPORT_DISPLAY, OLED_FRAMERATE);
+        oledThread.setup(2, OLED_FRAMERATE);
     } else {
-        ledThread.setup(I2CPORT_DISPLAY, LED_FRAMERATE_PLA);
+        ledThread.setup(2, LED_FRAMERATE_PLA);
     }
     om::println("threadRunner.setup");
 

@@ -144,12 +144,5 @@ void Accel3Thread::loop() {
     double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {
         om::print("ERROR! NO BMA250 DETECTED!");
-    } else { 
-        if ((iSample % 10) == 0) {
-            xCycle.print();
-            om::print(" ");
-            om::print((int16_t)(xyz[iSample].x-curXYZ.x));
-            om::print("\n");
-        }
     }
 }

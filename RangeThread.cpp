@@ -18,9 +18,10 @@ RangeThread::RangeThread(uint16_t msLoop, uint8_t port)
     : msLoop(msLoop), port(port)
 {}
 
-void RangeThread::setup() {
+void RangeThread::setup(uint8_t port) {
     id = 'R';
     Thread::setup();
+    this->port = port;
     om::print("RangeThread.setup");
 }
 
@@ -31,8 +32,8 @@ void RangeThread::loop() {
     int32_t cycleTicks = om::ticks() - accelThread.xCycle.lastCycle;
     if (accelThread.xCycle.center ) {
         accelThread.xCycle.center = false;
-        if (0 < cycleTicks && cycleTicks < 3000) {
-            lraThread.setEffect(DRV2605_SHARP_TICK_3);
+        if (200 < cycleTicks && cycleTicks < 3000) {
+            lraThread.setEffect(DRV2605_SHARP_CLICK_30);
             ledThread.leds[0] = CRGB(0,128,0);
             ledThread.show(SHOWLED_FADE50);
         }

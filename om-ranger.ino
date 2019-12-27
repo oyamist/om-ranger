@@ -28,7 +28,7 @@ void setup() { // run once, when the sketch starts
     // Initialize
 	accelThread.setup();
     lraThread.setup();
-    rangeThread.setup();
+    rangeThread.setup(0,200);
     if (DISPLAY_OLED) { // Mutually exclusive I2CPORT_DISPLAY
         oledThread.setup(I2CPORT_DISPLAY, OLED_FRAMERATE);
     } else {

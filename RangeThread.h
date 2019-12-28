@@ -26,6 +26,8 @@ protected:
     void loop();
     RangeType rng = RNG_UNKNOWN;
     uint32_t lastDist = 8192L;
+    uint32_t minRange = 120L;
+    uint32_t maxRange = 2000L;
 } RangeThread;
 
 extern RangeThread rangeThread;

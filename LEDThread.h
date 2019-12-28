@@ -7,6 +7,8 @@
 #define LED_FRAMERATE_PLA 40 /* 25 fps */
 #define SHOWLED_FADE0 0  /* 0% brightness after first period */
 #define SHOWLED_FADE50 50  /* 50% brightness each period */
+#define SHOWLED_FADE80 80  /* 80% brightness each period */
+#define SHOWLED_FADE85 85  /* 85% brightness each period */
 #define SHOWLED_ON 100  /* 100% brightness each period */
 
 #define NUM_LEDS 1

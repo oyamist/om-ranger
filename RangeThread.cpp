@@ -54,7 +54,6 @@ void RangeThread::loop() {
     // Static ranging pulses with period proportionate to range
     if (dist == 8190L) { // out of range
       int32_t cycleTicks = om::ticks() - px->lastCycle;
-      rng = RNG_UNKNOWN;
       if (px->center ) {
           px->center = false;
           if (200 < cycleTicks && cycleTicks < 3000) {
@@ -62,32 +61,39 @@ void RangeThread::loop() {
               ledThread.show(SHOWLED_FADE50);
           }
       }
+      rng = RNG_UNKNOWN;
     } else {
       uint32_t now = om::ticks();
       uint32_t cycleTicks = now - px->lastCycle;
       CRGB curLed = ledThread.leds[0];
       uint16_t brightness = 255;
-      if (dist < 100) { // Very close
+      if (loops %8 == 0) {
+        om::print("dist");
+        om::println(dist);
+      }
+      if (dist < 50) {
+        // do nothing
+      } else  if (dist < 150) { // Very close
         rng = RNG_TOUCH;
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0,0xff);
-        if (1 ) { lraThread.setEffect(DRV2605_SMOOTH_HUM_1); }
-      } else if (dist < 250) {
+        curLed = CRGB(0xff,0,0);
+        if (1 ) { lraThread.setEffect(DRV2605_STRONG_CLICK_30); }
+      } else if (dist < 300) {
         rng = RNG_CLOSE;
         curLed = CRGB(0xff,0,0);                  
-        if (dist < lastDist ) { lraThread.setEffect(DRV2605_SMOOTH_HUM_1); }
-      } else if (dist < 500) { // Somewhat close
+        if (loops % 4 == 0 ) { lraThread.setEffect(DRV2605_STRONG_CLICK_30); }
+      } else if (dist < 600) { // Somewhat close
         rng = RNG_BODY;
         curLed = CRGB(0xcc,0x33,0); 
-        if (dist < lastDist && loops % 2 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_2); }
+        if (dist < lastDist && loops % 1 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_1); }
       } else if (dist < 1000) {
         rng = RNG_NEAR;
         curLed = CRGB(0,0xaa,0);
-        if (dist < lastDist && loops % 3 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_3); }
+    //    if (dist < lastDist && loops % 3 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_3); }
       } else {
         rng = RNG_FAR;
-        curLed = CRGB(0x66,0x66,0x66);
-        if (dist < lastDist && loops % 5 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_5); }
+        curLed = CRGB(0x11,0x66,0x11);
+ //       if (dist < lastDist && loops % 5 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_5); }
       }
       ledThread.brightness = brightness;
       if (curLed.r != ledThread.leds[0].r ||

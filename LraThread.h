@@ -3,6 +3,8 @@
 
 #include "src/omilli/Thread.h"
 
+#define DRV2605_STRONG_CLICK_100 1
+#define DRV2605_STRONG_CLICK_60 2
 #define DRV2605_STRONG_CLICK_30 3
 #define DRV2605_SHARP_CLICK 4
 #define DRV2605_SHARP_TICK_1 24

@@ -85,15 +85,15 @@ void RangeThread::loop() {
       } else if (dist < 650) { // Somewhat close
         rng = RNG_BODY;
         curLed = CRGB(0xcc,0x33,0); 
-        if (dist < lastDist && loops % 1 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_1); }
+        if (dist < lastDist) { lraThread.setEffect(DRV2605_SMOOTH_HUM_1); }
       } else if (dist < 1000) {
         rng = RNG_NEAR;
         curLed = CRGB(0,0xaa,0);
-    //    if (dist < lastDist && loops % 3 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_3); }
+        if (dist < lastDist) { lraThread.setEffect(DRV2605_SMOOTH_HUM_3); }
       } else if (dist < 2000) {
         rng = RNG_FAR;
         curLed = CRGB(0x11,0x66,0x11);
- //       if (dist < lastDist && loops % 5 == 0) { lraThread.setEffect(DRV2605_SMOOTH_HUM_5); }
+        if (dist < lastDist) { lraThread.setEffect(DRV2605_SMOOTH_HUM_5); }
       } else {
         // do nothing: high range noise
       }

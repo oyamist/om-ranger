@@ -52,8 +52,15 @@ void LEDThread::loop() {
     if (brightness) {
         brightness = (brightness * effect)/100;
         nextLoop.ticks = om::ticks() + MS_TICKS(msPeriod);
-        FastLED.setBrightness(brightness);
-        FastLED.show();
+        if (brightness != lastBrightness || 
+            lastRgb.r != leds[0].r ||
+            lastRgb.g != leds[0].g ||
+            lastRgb.b != leds[0].b) {
+            FastLED.setBrightness(brightness);
+            FastLED.show();
+            lastRgb = leds[0];
+            lastBrightness = brightness;
+        }
     } else {
         nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     }

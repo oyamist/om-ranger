@@ -22,10 +22,25 @@ namespace om {
 	inline void print(const char value) {
 		SerialUSB.print(value);
 	}
-  inline void print(int16_t value, int16_t format = DEC) {
+  inline void print(int8_t value, int16_t format = DEC) {
     SerialUSB.print(value, format);
   }
   inline void print(uint8_t value, int16_t format = DEC) {
+    SerialUSB.print(value, format);
+  }
+  inline void print(int16_t value, int16_t format = DEC) {
+    SerialUSB.print((float) value, 0);
+  }
+  inline void print(uint16_t value, int16_t format = DEC) {
+    SerialUSB.print((float) value, 0);
+  }
+  inline void print(int32_t value, int16_t format = DEC) {
+    SerialUSB.print((double) value, 0);
+  }
+  inline void print(uint32_t value, int16_t format = DEC) {
+    SerialUSB.print((double) value, 0);
+  }
+  inline void print(float value, int16_t format = 2) {
     SerialUSB.print(value, format);
   }
   inline void print(double value, int16_t format = 3) {

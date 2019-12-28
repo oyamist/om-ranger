@@ -34,9 +34,14 @@ namespace om { // abstract API implementable any way you like
 	void serial_begin(int32_t baud);
 	void print(const char *value);
 	void print(const char value);
+  void print(uint8_t value, int16_t format = DEC);
+  void print(int8_t value, int16_t format = DEC);
+  void print(uint16_t value, int16_t format = DEC);
 	void print(int16_t value, int16_t format = DEC);
-    void print(uint8_t value, int16_t format = DEC);
-    void print(double value, int16_t places = 3);
+  void print(uint32_t value, int16_t format = DEC);
+	void print(int32_t value, int16_t format = DEC);
+  void print(float value, int16_t places = 3);
+  void print(double value, int16_t places = 3);
 	void pinMode(int16_t pin, int16_t inout);
 	int16_t digitalRead(int16_t pin);
 	void digitalWrite(int16_t dirPin, int16_t value);
@@ -57,11 +62,53 @@ namespace om {
     inline void println() {
         om::print('\n');
     }
+    inline void println(int8_t value, int16_t format=DEC) {
+				//om::print("println int8_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(uint8_t value, int16_t format=DEC) {
+				//om::print("println uint8_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(int16_t value, int16_t format=DEC) {
+				//om::print("println int16_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(uint16_t value, int16_t format=DEC) {
+				//om::print("println uint16_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(int32_t value, int16_t format=DEC) {
+				//om::print("println int32_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(uint32_t value, int16_t format=DEC) {
+				//om::print("println uint32_t");
+        om::print(value, format);
+        om::print('\n');
+    }
+    inline void println(float value, int16_t places=2) {
+				//om::print("println float");
+        om::print(value, places);
+        om::print('\n');
+    }
+    inline void println(double value, int16_t places=3) {
+				//om::print("println double");
+        om::print(value, places);
+        om::print('\n');
+    }
     inline void println(const char value) {
+				//om::print("println const char");
         om::print(value);
         om::print('\n');
     }
     inline void println(const char* value) {
+				//om::print("println const char*");
         om::print(value);
         om::print('\n');
     }

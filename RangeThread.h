@@ -6,6 +6,15 @@
 
 #define VL53L0X_PERIOD 33
 
+typedef enum RangeType {
+  RNG_UNKNOWN = 0,   // Center flash white
+  RNG_TOUCH = 1,     // Steady red
+  RNG_CLOSE = 2,     // Quick flash red
+  RNG_BODY = 3,      // Slow flash red
+  RNG_NEAR = 4,      // Steady green
+  RNG_FAR = 5,       // Slow flash green
+} RangeType;
+
 typedef class RangeThread : om::Thread {
 public:
     RangeThread();
@@ -15,6 +24,8 @@ protected:
     uint8_t port;
     uint16_t msLoop;
     void loop();
+    RangeType rng = RNG_UNKNOWN;
+    uint32_t lastDist = 8192L;
 } RangeThread;
 
 extern RangeThread rangeThread;

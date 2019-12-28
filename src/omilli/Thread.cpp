@@ -80,7 +80,7 @@ void MonitorThread::Error(const char *msg, int value) {
         om::print('>');
     }
     om::print(msg);
-    om::println(value);
+    om::println((int16_t) value);
 }
 
 void MonitorThread::loop() {

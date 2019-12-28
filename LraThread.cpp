@@ -56,7 +56,7 @@ void LraThread::loop() {
 
     if (level) {
         drv.setMode(DRV2605_MODE_REALTIME);
-        drv.setRealtimeValue((nextLoop.loops%2) ? level : 0);
+        drv.setRealtimeValue((loops%2) ? level : 0);
     } else {
         playWaveform();
     }

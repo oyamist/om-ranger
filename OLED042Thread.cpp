@@ -47,7 +47,7 @@ void OLED042Thread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     Wireling.selectPort(port);  // 
     clearOLED(); // Important for animations or scrolling text
-    sprintf(lines[0], "%d", nextLoop.loops);
+    sprintf(lines[0], "%d", loops);
     for (int i = 0; i < OLED042_LINES; i++) {
         if (lines[i][0]) {
             textPos = i*xMax;

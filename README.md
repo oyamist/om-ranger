@@ -31,3 +31,5 @@ for microcontrollers.
   Non-reflective surfaces such as 
   [Vantablack](https://en.wikipedia.org/wiki/Vantablack) will not be 
   detected.
+* Thin objects may not be detectable. E.g., chair seats are 
+  much more detectable than chair legs. 

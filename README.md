@@ -1,6 +1,5 @@
 # Hap-eRanger - Haptic Electronic Ranger (Infrared TOF)
-### Touch-free visual assistance
-### "Happy ranging"
+### Range freely and happily with touch-free visual assistance
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.

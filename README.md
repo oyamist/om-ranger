@@ -26,8 +26,8 @@ for microcontrollers.
 * Do not expose to water. The wand is not water resistant.
 * Do not drop. The wand has fragile electronic components.
 * Not for outdoor use. It's too bright for the wand.
-* Ranging sensitivity varies by material sensed. Transmissive surfaces such as 
-  glass may not be detectable unless the wand is aimed directly at the
-  surface. Non-reflective surfaces such as 
+* Ranging sensitivity varies by material sensed. Weakly reflective surfaces
+  such as glass may not be detectable at shallow angles.
+  Non-reflective surfaces such as 
   [Vantablack](https://en.wikipedia.org/wiki/Vantablack) will not be 
   detected.

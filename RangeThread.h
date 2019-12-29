@@ -15,6 +15,14 @@ typedef enum RangeType {
   RNG_FAR = 5,       // Slow flash green
 } RangeType;
 
+typedef enum ModeType {
+    MODE_IDLE = 0,
+    MODE_SWEEP = 1,  // Left-right sweep
+    MODE_STEP = 2,   // Floor sweep
+} ModeType;
+
+#define DIST_FAST 0.5
+
 typedef class RangeThread : om::Thread {
 public:
     RangeThread();
@@ -28,6 +36,8 @@ protected:
     uint32_t lastDist = 8192L;
     uint32_t minRange = 120L;
     uint32_t maxRange = 2000L;
+    uint32_t distFast = 0;
+    ModeType mode;
 } RangeThread;
 
 extern RangeThread rangeThread;

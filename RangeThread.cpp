@@ -31,82 +31,82 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setTimeout(500);
     distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
     distanceSensor.startContinuous();
+    mode = MODE_IDLE;
 }
 #define SLOWFLASH 10
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
-    SweepCycle * px = &accelThread.xCycle;
-    SweepCycle * py = &accelThread.yCycle;
-    SweepCycle * pz = &accelThread.zCycle;
+    AxisState * px = &accelThread.xState;
+    AxisState * py = &accelThread.yState;
+    AxisState * pz = &accelThread.zState;
     if (px->heading==HEADING_IDLE && 
         py->heading==HEADING_IDLE && 
         pz->heading==HEADING_IDLE) {
        ledThread.leds[0] = CRGB(0,0,0); // no contact
-       return; // Motionless
+       mode = MODE_IDLE;
     }
-    uint16_t dist = distanceSensor.readRangeContinuousMillimeters();
+    mode = absval(py->valSlow) < absval(pz->valSlow) 
+        ? MODE_SWEEP    // ranging forward
+        : MODE_STEP;    // ranging down
+    if (mode == MODE_IDLE) {
+        return;
+    }
+
+    uint16_t d = distanceSensor.readRangeContinuousMillimeters();
+    distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
+    uint16_t dist = distFast;
     if (dist < minRange || maxRange < dist) {
         return;
     }
-    if (loops % 30 == 1) {
-        om::print("dist:");
-        om::println(dist);
+    if (loops % 16 == 0) {
+        om::print("mode");
+        om::print(mode);
+        om::print(" distFast");
+        om::print(distFast);
+        om::print(" d");
+        om::println(d);
     }
 
-    // Sweep ranging pulses within range
-    // Static ranging pulses with period proportionate to range
-    if (dist == 8190L) { // out of range
-      //int32_t cycleTicks = om::ticks() - px->lastCycle;
-      //if (px->center ) {
-          //px->center = false;
-          //if (200 < cycleTicks && cycleTicks < 3000) {
-              //ledThread.leds[0] = CRGB(32,32,32); // no contact
-              //ledThread.show(SHOWLED_FADE50);
-          //}
-      //}
-    } else {
-        uint32_t now = om::ticks();
-        uint32_t cycleTicks = now - px->lastCycle;
-        CRGB curLed = ledThread.leds[0];
-        uint16_t brightness = 255;
-        if (loops %8 == 0) {
-        om::print("dist");
-        om::println(dist);
-        }
-        if (dist < 250) { // Very close
-            brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-            curLed = CRGB(0xff,0,0);
+    uint32_t now = om::ticks();
+    uint32_t cycleTicks = now - px->lastState;
+    CRGB curLed = ledThread.leds[0];
+    uint8_t blue = mode == MODE_STEP ? 0x66 : 0;
+    uint16_t brightness = 255;
+    if (dist < 250) { // Very close
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        curLed = CRGB(0xff,0,blue);
+        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+    } else if (dist < 400) {
+        curLed = CRGB(0xff,0,blue);                  
+        if (loops % 2 == 0) {
             lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        } else if (dist < 400) {
-            curLed = CRGB(0xff,0,0);                  
-            if (loops % 2 == 0) {
-                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-            }
-        } else if (dist < 650) { // Somewhat close
-            curLed = CRGB(0xcc,0x33,0); 
-            if (loops % 3 == 0) {
-                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-            }
-        } else if (dist < 1000) {
-            curLed = CRGB(0,0xaa,0);
-            if (loops % 5 == 0) {
-                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-            }
-        } else if (dist < 2000) {
-            curLed = CRGB(0x11,0x66,0x11);
-            if (loops % 8 == 0) {
-                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-            }
         }
-        ledThread.brightness = brightness;
-        if (curLed.r != ledThread.leds[0].r ||
-          curLed.g != ledThread.leds[0].g ||
-          curLed.b != ledThread.leds[0].b) {
-          ledThread.leds[0] = curLed;
-          ledThread.show(SHOWLED_FADE85);
+    } else if (dist < 650) { // Somewhat close
+        curLed = CRGB(0xcc,0x33,blue); 
+        if (loops % 3 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
+    } else if (dist < 1000) {
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        curLed = CRGB(0,0xaa,blue);
+        if (loops % 5 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    } else if (dist < 2000) {
+        curLed = CRGB(0,0xaa,blue);
+        if (loops % 8 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    }
+    ledThread.brightness = brightness;
+    if (curLed.r != ledThread.leds[0].r ||
+        curLed.g != ledThread.leds[0].g ||
+        curLed.b != ledThread.leds[0].b) 
+    {
+        ledThread.leds[0] = curLed;
+        ledThread.show(SHOWLED_FADE85);
     }
 
     lastDist = dist;

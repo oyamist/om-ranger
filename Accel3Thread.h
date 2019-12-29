@@ -3,40 +3,9 @@
 
 #include "src/omilli/Thread.h"
 
-typedef struct XYZ {
-    int16_t x=0, y=0, z=0;
-    void set(int x, int y, int z) {
-        this->x = x;
-        this->y = y;
-        this->z = z;
-    }
-    struct XYZ mapMin(XYZ that);
-    struct XYZ mapMax(XYZ that);
-    inline XYZ operator+(XYZ that) {
-        XYZ xyz;
-        xyz.x = x + that.x;
-        xyz.y = y + that.y;
-        xyz.z = z + that.z;
-        return xyz;
-    }
-    inline XYZ operator-(XYZ that) {
-        XYZ xyz;
-        xyz.x = x - that.x;
-        xyz.y = y - that.y;
-        xyz.z = z - that.z;
-        return xyz;
-    }
-    inline XYZ operator-() {
-        XYZ xyz;
-        xyz.x = -x;
-        xyz.y = -y;
-        xyz.z = -z;
-        return xyz;
-    }
-
-    void print();
-} XYZ;
-
+/* Heading resolution is quite coarse, which provides robust
+ * resistance to noise from many sources.
+ */
 typedef int16_t Heading;
 #define HEADING_LFT     -2
 #define HEADING_CTR_LFT -1
@@ -44,38 +13,47 @@ typedef int16_t Heading;
 #define HEADING_CTR_RHT  1
 #define HEADING_RHT      2
 
+/* The heading is determined by ranking current sample
+ * with respect to recent samples. The recent sample
+ * window size assumes a side-to-side sweep period of 
+ * about one second.
+ */
+#define ACCEL_SAMPLES 32 /* 960 ms */
 
-typedef class SweepCycle {
+typedef class AxisState {
 public:
-    SweepCycle(char id, bool invert=false);
     bool invert;
     char id;
     uint16_t cycles = 0;
-    om::Ticks lastCycle = 0;
+    om::Ticks lastState = 0;
     Heading nextHeading = HEADING_RHT;
     Heading heading = HEADING_IDLE;
     bool center = false;
+    int16_t data[ACCEL_SAMPLES];
+    int16_t maxVal;
+    int16_t minVal;
+    float valFast;
+    float valSlow;
 
+    AxisState(char id, bool invert=false);
+    void addData(int16_t value, int16_t index, int16_t damping);
     void setHeading(int16_t rank, bool damped);
     void headingToString(char * buf);
     void print();
-} SweepCycle;
-
-#define ACCEL_SAMPLES 32 /* 960 ms */
+} AxisState;
 
 typedef class Accel3Thread : om::Thread {
 public:
     Accel3Thread(uint16_t msLoop=32, int16_t damping=10);
     void setup();
     void loop();
-    SweepCycle xCycle = SweepCycle('x', false); // positive right
-    SweepCycle yCycle = SweepCycle('y', false); // positive forward
-    SweepCycle zCycle = SweepCycle('z', true);  // positive up
+    AxisState xState = AxisState('x', false); // positive right
+    AxisState yState = AxisState('y', false); // positive forward
+    AxisState zState = AxisState('z', true);  // positive up
 
 protected:
     int16_t damping;
     uint16_t msLoop;
-    XYZ xyz[ACCEL_SAMPLES];
     int iSample = 0;
 } Accel3Thread;
 

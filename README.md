@@ -1,6 +1,6 @@
-# OM-Ranger - An Infrared Support Wand
+# Hap&#2713;eRanger - Haptic Electronic Ranger (Infrared TOF)
 ### Touch-free visual assistance
-### "Feel at OM on the Range"
+### "Happy ranging"
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.

@@ -6,46 +6,43 @@
 #include "src/tinycircuits/BMA250.h"       
 #include "Accel3Thread.h"
 
-//////////////////// XYZ ////////////////////
-
-void XYZ::print() {
-    om::print("{x:");
-    om::print(this->x);
-
-    om::print(",y:");
-    om::print(this->y);
-
-    om::print(",z:");
-    om::print(this->z);
-    om::println("}");
-}
-
-struct XYZ XYZ::mapMin(XYZ that) {
-    XYZ result;
-    result.x = minval(x, that.x);
-    result.y = minval(y, that.y);
-    result.z = minval(z, that.z);
-    return result;
-}
-    
-struct XYZ XYZ::mapMax(XYZ that) {
-    XYZ result;
-    result.x = maxval(x, that.x);
-    result.y = maxval(y, that.y);
-    result.z = maxval(z, that.z);
-    return result;
-}
-    
-/////////////// SweepCycle /////////////////
+/////////////// AxisState /////////////////
 
 #define MAX_CYCLE_TICKS 1500
+#define TC_FAST 0.5
+#define TC_SLOW 0.6
 
-SweepCycle::SweepCycle(char id, bool invert) 
-    : id(id), invert(invert) 
-{}
+AxisState::AxisState(char id, bool invert) 
+    :   id(id), invert(invert), valFast(0), valSlow(0), 
+        maxVal(0), minVal(0)
+{
+    for (int i = 0; i < ACCEL_SAMPLES; i++) {
+        data[i] = 0;
+    }
+}
+
+void AxisState::addData(int16_t value, int16_t index, int16_t damping) {
+    index = index % ACCEL_SAMPLES;
+    int16_t curValue = data[index];
+    data[index] = value;
+
+    int16_t rank = 0;
+    valFast = val * TC_FAST + (1-TC_FAST) * valFast;
+    valSlow = val * TC_SLOW + (1-TC_SLOW) * valSlow;
+    maxVal = minVal = value;
+    for (int i = 0; i < ACCEL_SAMPLES; i++) {
+        if (data[i] < minVal) { minVal = data[i]; }
+        if (maxVal < data[i]) { maxVal = data[i]; }
+        if (value >= data[i]) { rank++; }
+    }
+
+    rank = (100*rank)/ACCEL_SAMPLES;
+    int range = maxVal - minVal;
+    setHeading(rank, range <= damping);
+}
 
 #define SWEEP_END 20
-void SweepCycle::setHeading(int16_t rank, bool damped) {
+void AxisState::setHeading(int16_t rank, bool damped) {
     Heading h;
     if (damped) {
         h = HEADING_IDLE;
@@ -67,16 +64,16 @@ void SweepCycle::setHeading(int16_t rank, bool damped) {
     heading = h;
     if (heading == nextHeading) {
         om::Ticks now = om::ticks();
-        if (now - lastCycle > MAX_CYCLE_TICKS) {
+        if (now - lastState > MAX_CYCLE_TICKS) {
             heading = HEADING_IDLE;
         }
         nextHeading = nextHeading == HEADING_RHT 
             ? HEADING_LFT : HEADING_RHT;
-        lastCycle = now;
+        lastState = now;
     }
 }
 
-void SweepCycle::print() {
+void AxisState::print() {
     char buf[6];
     this->headingToString(buf);
     om::print(buf);
@@ -84,7 +81,7 @@ void SweepCycle::print() {
     om::print(nextHeading);
 }
 
-void SweepCycle::headingToString(char *buf) {
+void AxisState::headingToString(char *buf) {
     switch (heading) {
     case HEADING_LFT: sprintf(buf, "%c-:--", id); break;
     case HEADING_CTR_LFT: sprintf(buf, "-%c:--", id); break;
@@ -116,33 +113,17 @@ void Accel3Thread::setup() {
 void Accel3Thread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     accel_sensor.read();
+    double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     int x = accel_sensor.X;
     int y = accel_sensor.Y;
     int z = accel_sensor.Z;
-    XYZ rank;
-    XYZ curXYZ = xyz[iSample];
-    XYZ minXYZ(curXYZ);
-    XYZ maxXYZ(curXYZ);
-    rank.set(0,0,0);
-    for (int i = 0; i < ACCEL_SAMPLES; i++) {
-        minXYZ = minXYZ.mapMin(xyz[i]);
-        maxXYZ = maxXYZ.mapMax(xyz[i]);
-        if (x >= xyz[i].x) { rank.x++; }
-        if (y >= xyz[i].y) { rank.y++; }
-        if (z >= xyz[i].z) { rank.z++; }
-    }
-    rank.x = (100*rank.x)/ACCEL_SAMPLES;
-    rank.y = (100*rank.y)/ACCEL_SAMPLES;
-    rank.z = (100*rank.z)/ACCEL_SAMPLES;
-    iSample = (iSample+1) % ACCEL_SAMPLES;
-    xyz[iSample].set(x,y,z);
-    XYZ range = maxXYZ - minXYZ;
-    xCycle.setHeading(rank.x, range.x<=damping);
-    yCycle.setHeading(rank.y, range.y<=damping);
-    zCycle.setHeading(rank.z, range.z<=damping);
 
-    double temp = ((accel_sensor.rawTemp * 0.5) + 24.0);
     if (x == -1 && y == -1 && z == -1) {
         om::print("ERROR! NO BMA250 DETECTED!");
+    } else {
+        iSample = (iSample+1) % ACCEL_SAMPLES;
+        xState.addData(x, iSample, damping);
+        yState.addData(y, iSample, damping);
+        zState.addData(z, iSample, damping);
     }
 }

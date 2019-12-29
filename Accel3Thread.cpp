@@ -27,8 +27,8 @@ void AxisState::addData(int16_t value, int16_t index, int16_t damping) {
     data[index] = value;
 
     int16_t rank = 0;
-    valFast = val * TC_FAST + (1-TC_FAST) * valFast;
-    valSlow = val * TC_SLOW + (1-TC_SLOW) * valSlow;
+    valFast = value * TC_FAST + (1-TC_FAST) * valFast;
+    valSlow = value * TC_SLOW + (1-TC_SLOW) * valSlow;
     maxVal = minVal = value;
     for (int i = 0; i < ACCEL_SAMPLES; i++) {
         if (data[i] < minVal) { minVal = data[i]; }

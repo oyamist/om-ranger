@@ -62,7 +62,7 @@ void RangeThread::loop() {
     }
     if (loops % 16 == 0) {
         om::print("mode");
-        om::print(mode);
+        om::print((int8_t)mode);
         om::print(" distFast");
         om::print(distFast);
         om::print(" d");

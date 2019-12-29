@@ -32,3 +32,6 @@ for microcontrollers.
   detected.
 * Thin objects may not be detectable. E.g., chair seats are 
   much more detectable than chair legs. 
+* In forward-sweep mode, the wand cannot detect descending steps.
+* In floor-sweep mode, the wand cannot detect forward obstacles.
+* To mute the wand, cover the tip. Or just put it in your pocket.

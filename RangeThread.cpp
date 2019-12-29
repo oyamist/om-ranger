@@ -78,7 +78,7 @@ void RangeThread::loop() {
         if (dist < 250) { // Very close
             brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
             curLed = CRGB(0xff,0,0);
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); }
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         } else if (dist < 400) {
             curLed = CRGB(0xff,0,0);                  
             if (loops % 2 == 0) {
@@ -86,17 +86,17 @@ void RangeThread::loop() {
             }
         } else if (dist < 650) { // Somewhat close
             curLed = CRGB(0xcc,0x33,0); 
-            if (loops % 4 == 0) {
+            if (loops % 3 == 0) {
                 lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
             }
         } else if (dist < 1000) {
             curLed = CRGB(0,0xaa,0);
-            if (loops % 8 == 0) {
+            if (loops % 5 == 0) {
                 lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
             }
         } else if (dist < 2000) {
             curLed = CRGB(0x11,0x66,0x11);
-            if (loops % 16 == 0) {
+            if (loops % 8 == 0) {
                 lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
             }
         }

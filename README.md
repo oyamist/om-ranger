@@ -1,4 +1,4 @@
-# Hap&#2713;eRanger - Haptic Electronic Ranger (Infrared TOF)
+# Hap&#x2713;eRanger - Haptic Electronic Ranger (Infrared TOF)
 ### Touch-free visual assistance
 ### "Happy ranging"
 Support canes used by the blind have a major drawback in that

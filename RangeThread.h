@@ -22,6 +22,7 @@ typedef enum ModeType {
 } ModeType;
 
 #define DIST_FAST 0.5
+#define DIST_SLOW 0.85
 
 typedef class RangeThread : om::Thread {
 public:

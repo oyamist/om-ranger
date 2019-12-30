@@ -138,12 +138,14 @@ void RangeThread::loop() {
         ledThread.leds[0] = CRGB(0,0,0); // no contact
         if (mode != MODE_IDLE) { 
             om::println("MODE_IDLE standing by...");
+            monitorThread.quiet(true);
             distanceSensor.stopContinuous(); // 0.006mA
         }
         mode = MODE_IDLE;
     } else {
         if (mode == MODE_IDLE) {
             om::println("Motion detected, active...");
+            monitorThread.quiet(false);
             distanceSensor.startContinuous(); // 19mA
         }
         mode = absval(py->valSlow) < absval(pz->valSlow) 

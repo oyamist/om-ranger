@@ -71,6 +71,7 @@ public:
     bool verbose;
 public:
     void Error(const char *msg, int value); /* PRIVATE */
+    void quiet(bool q);
 } MonitorThread;
 
 void Error(const char *msg, int value);

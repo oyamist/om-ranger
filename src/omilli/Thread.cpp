@@ -68,6 +68,10 @@ void MonitorThread::setup(int pinLED) {
     blinkLED = true;
 }
 
+void MonitorThread::quiet(bool q) {
+    blinkLED = (q == false);
+}
+
 void MonitorThread::LED(uint8_t value) {
     if (pinLED != NOPIN) {
         om::digitalWrite(pinLED, value ? HIGH : LOW);
@@ -88,12 +92,10 @@ void MonitorThread::loop() {
 #define MONITOR
 #ifdef MONITOR
     ThreadEnable(false);
-    if (blinkLED) {
-        if (isHigh) {
-            LED(blinkLED);
-        } else {
-            LED(LOW);
-        }
+    if (isHigh) {
+        LED(blinkLED);
+    } else {
+        LED(LOW);
     }
     if (nTardies > 50) {
         Error("T", nTardies);

@@ -159,6 +159,9 @@ void RangeThread::loop() {
     distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
     int32_t diffDist = distSlow-distFast;
     uint16_t dist = distFast;
+    if (dist < minRange || maxRange < dist) {
+        return;
+    }
     if (loops % 16 == 0) {
         om::print("mode");
         om::print((int8_t)mode);
@@ -171,9 +174,6 @@ void RangeThread::loop() {
         om::print(" diffDist");
         om::print(diffDist);
         om::println();
-    }
-    if (dist < minRange || maxRange < dist) {
-        return;
     }
 
     switch (mode) {

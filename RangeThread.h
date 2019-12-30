@@ -16,9 +16,9 @@ typedef enum RangeType {
 } RangeType;
 
 typedef enum ModeType {
-    MODE_IDLE = 0,
-    MODE_SWEEP = 1,  // Left-right sweep
-    MODE_STEP = 2,   // Floor sweep
+    MODE_IDLE = 0,   // Inactive
+    MODE_SWEEP_FORWARD = 1,  // Left-right sweep
+    MODE_SWEEP_STEP = 2,   // Floor sweep
 } ModeType;
 
 #define DIST_FAST 0.5
@@ -33,11 +33,14 @@ protected:
     uint16_t msLoop;
     void loop();
     RangeType rng = RNG_UNKNOWN;
-    uint32_t lastDist = 8192L;
+    int32_t lastDist = 8192L;
     uint32_t minRange = 120L;
     uint32_t maxRange = 2000L;
-    uint32_t distFast = 0;
+    int32_t distFast = 0;
+    int32_t distSlow = 0;
     ModeType mode;
+    void sweepForward(uint16_t dist);
+    void sweepStep(uint16_t dist);
 } RangeThread;
 
 extern RangeThread rangeThread;

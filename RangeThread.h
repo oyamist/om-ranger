@@ -40,6 +40,7 @@ protected:
     int32_t distFast = 0;
     int32_t distSlow = 0;
     int16_t stepHeadings[HEADING_COUNT];
+    uint32_t stepTickLoops = 0;
     ModeType mode;
 
     void sweepForward(uint16_t dist);

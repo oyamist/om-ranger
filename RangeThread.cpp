@@ -88,7 +88,7 @@ void RangeThread::sweepForward(uint16_t dist) {
     }
 }
 
-#define STEP_DIFF 40
+#define STEP_DIFF 150
 #define STEP_T 0.5
 
 void RangeThread::sweepStep(uint16_t dist) {
@@ -125,7 +125,20 @@ void RangeThread::sweepStep(uint16_t dist) {
     } else {
         curLed = CRGB(0,0xaa,blue);
         if (py->heading == HEADING_RHT) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+            if (loops > stepTickLoops) {
+                stepTickLoops = loops + 10;
+                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+                om::print(stepHeadings[0]);
+                om::print(", ");
+                om::print(stepHeadings[1]);
+                om::print(", ");
+                om::print(stepHeadings[2]);
+                om::print(", ");
+                om::print(stepHeadings[3]);
+                om::print(", ");
+                om::print(stepHeadings[4]);
+                om::println();
+            }
         }
     }
     ledThread.brightness = brightness;
@@ -151,21 +164,18 @@ void RangeThread::loop() {
         if (mode != MODE_IDLE) { 
             om::println("MODE_IDLE standing by...");
             monitor.quiet(true);
-            distanceSensor.stopContinuous(); // 0.006mA
+            //distanceSensor.stopContinuous(); // 0.006mA
         }
         mode = MODE_IDLE;
     } else {
         if (mode == MODE_IDLE) {
             om::println("Motion detected, active...");
             monitor.quiet(false);
-    distanceSensor.init();
-    distanceSensor.setTimeout(500);
-    distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
-            distanceSensor.startContinuous(); // 19mA
+            //distanceSensor.startContinuous(); // 19mA
         }
-        mode = absval(py->valSlow) < absval(pz->valSlow) 
-            ? MODE_SWEEP_FORWARD    // ranging forward
-            : MODE_SWEEP_STEP;    // ranging down
+        mode = absval(py->valSlow) < 0.5*absval(pz->valSlow) 
+            ? MODE_SWEEP_FORWARD  // ranging forward above 60 degrees
+            : MODE_SWEEP_STEP;    // ranging down below 60 degrees
     }
     if (mode == MODE_IDLE) {
         return;
@@ -177,17 +187,6 @@ void RangeThread::loop() {
     uint16_t dist = distFast;
     if (dist < minRange || maxRange < dist) {
         return;
-    }
-    if (loops % 16 == 0) {
-        om::print("mode");
-        om::print((int8_t)mode);
-        om::print(" d");
-        om::print(d);
-        om::print(" distFast");
-        om::print(distFast);
-        om::print(" distSlow");
-        om::print(distSlow);
-        om::println();
     }
 
     switch (mode) {

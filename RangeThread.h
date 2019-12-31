@@ -39,7 +39,9 @@ protected:
     uint32_t maxRange = 2000L;
     int32_t distFast = 0;
     int32_t distSlow = 0;
+    int16_t stepHeadings[HEADING_COUNT];
     ModeType mode;
+
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
 } RangeThread;

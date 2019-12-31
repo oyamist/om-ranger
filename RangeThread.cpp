@@ -33,6 +33,10 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
     distanceSensor.startContinuous(); // 19mA
 
+    for (int i = 0; i < HEADING_COUNT; i++) {
+        stepHeadings[i] = 0;
+    }
+
     mode = MODE_IDLE;
 }
 #define SLOWFLASH 10
@@ -84,14 +88,25 @@ void RangeThread::sweepForward(uint16_t dist) {
     }
 }
 
-#define STEP_DIFF 50
+#define STEP_DIFF 40
+#define STEP_T 0.5
 
 void RangeThread::sweepStep(uint16_t dist) {
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
-    int32_t diffDist = distSlow-distFast;
 
+    int8_t iHdg = 2;
+    int8_t iHdg2 = 2;
+    switch (py->heading) {
+    case HEADING_LFT:     iHdg = 0; iHdg2 = 1; break;
+    case HEADING_CTR_LFT: iHdg = 1; iHdg2 = 3; break;
+    case HEADING_IDLE:    iHdg = 2; break;
+    case HEADING_CTR_RHT: iHdg = 3; iHdg2 = 3; break;
+    case HEADING_RHT:     iHdg = 4; iHdg2 = 4; break;
+    }
+    stepHeadings[iHdg] = dist*STEP_T + (1-STEP_T)*stepHeadings[iHdg];
+    int16_t diffDist = stepHeadings[iHdg] - stepHeadings[iHdg2];
     uint32_t now = om::ticks();
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
@@ -109,7 +124,7 @@ void RangeThread::sweepStep(uint16_t dist) {
         }
     } else {
         curLed = CRGB(0,0xaa,blue);
-        if (loops % 16 == 0) {
+        if (py->heading == HEADING_RHT) {
             lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     }

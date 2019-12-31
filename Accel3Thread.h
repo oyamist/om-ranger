@@ -12,6 +12,7 @@ typedef int16_t Heading;
 #define HEADING_IDLE     0
 #define HEADING_CTR_RHT  1
 #define HEADING_RHT      2
+#define HEADING_COUNT    5 
 
 /* The heading is determined by ranking current sample
  * with respect to recent samples. The recent sample

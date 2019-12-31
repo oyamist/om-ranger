@@ -88,58 +88,80 @@ void RangeThread::sweepForward(uint16_t dist) {
     }
 }
 
-#define STEP_DIFF 150
+#define STEP_DIFF 80
 #define STEP_T 0.5
 
 void RangeThread::sweepStep(uint16_t dist) {
+    uint32_t now = om::ticks();
+    uint32_t cycleTicks = now - px->lastState;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
 
     int8_t iHdg = 2;
-    int8_t iHdg2 = 2;
     switch (py->heading) {
-    case HEADING_LFT:     iHdg = 0; iHdg2 = 1; break;
-    case HEADING_CTR_LFT: iHdg = 1; iHdg2 = 3; break;
+    case HEADING_LFT:     iHdg = 0; break;
+    case HEADING_CTR_LFT: iHdg = 1; break;
     case HEADING_IDLE:    iHdg = 2; break;
-    case HEADING_CTR_RHT: iHdg = 3; iHdg2 = 3; break;
-    case HEADING_RHT:     iHdg = 4; iHdg2 = 4; break;
+    case HEADING_CTR_RHT: iHdg = 3; break;
+    case HEADING_RHT:     iHdg = 4; break;
     }
     stepHeadings[iHdg] = dist*STEP_T + (1-STEP_T)*stepHeadings[iHdg];
-    int16_t diffDist = stepHeadings[iHdg] - stepHeadings[iHdg2];
-    uint32_t now = om::ticks();
-    uint32_t cycleTicks = now - px->lastState;
+
+    double y = absval(py->valSlow);
+    double z = absval(pz->valSlow);
+    double a = atan(z/y); // ~= atan(z/y) - da/2
+    double w = 180; // distance from sensor to wrist pivot
+    double r1 = stepHeadings[4] + w;    // h/cos(a-da) 
+    double r2 = stepHeadings[3] + w;    // h/cos(a)
+    double r3 = stepHeadings[1] + w;    // h/cos(a+da)
+    double r4 = stepHeadings[0] + w;    // h/cos(a+2*da)
+    double da = a - acos( cos(a) * r2/r1 );
+    double h = (r1*cos(a-da) + r2*cos(a))/2;
+    double er3 = h / cos(a+da);
+    double er4 = h / cos(a+2*da);
+
     CRGB curLed = ledThread.leds[0];
+    int32_t diffDist = 0;
+    switch (py->heading) {
+    case HEADING_LFT:     
+        diffDist = r4 - er4;
+        break;
+    case HEADING_CTR_LFT: 
+        diffDist = r3 - er3;
+        break;
+    case HEADING_CTR_RHT: 
+        break;
+    case HEADING_RHT:     
+        curLed = CRGB(0,0xaa,blue);
+        if (loops > stepTickLoops) {
+            stepTickLoops = loops + 10;
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+            om::print(stepHeadings[0]);
+            om::print(", ");
+            om::print(stepHeadings[1]);
+            om::print(", ");
+            om::print(stepHeadings[2]);
+            om::print(", ");
+            om::print(stepHeadings[3]);
+            om::print(", ");
+            om::print(stepHeadings[4]);
+            om::println();
+        }
+        break;
+    default: break;
+    }
+
     uint8_t blue = 0x66;
     uint16_t brightness = 255;
     if (diffDist > STEP_DIFF) { // Very close
         brightness = (loops % FASTFLASH) < FASTFLASH/2 ? 32 : 255;
         curLed = CRGB(0xff,0,blue);
-        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        lraThread.setEffect(DRV2605_TRANSITION_HUM_1); 
     } else if (diffDist < -STEP_DIFF) {
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0,blue);
-        if (loops % 2 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        }
-    } else {
-        curLed = CRGB(0,0xaa,blue);
-        if (py->heading == HEADING_RHT) {
-            if (loops > stepTickLoops) {
-                stepTickLoops = loops + 10;
-                lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-                om::print(stepHeadings[0]);
-                om::print(", ");
-                om::print(stepHeadings[1]);
-                om::print(", ");
-                om::print(stepHeadings[2]);
-                om::print(", ");
-                om::print(stepHeadings[3]);
-                om::print(", ");
-                om::print(stepHeadings[4]);
-                om::println();
-            }
-        }
+        curLed = CRGB(0xff,0xcc,blue);
+        lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
     }
     ledThread.brightness = brightness;
     if (curLed.r != ledThread.leds[0].r ||

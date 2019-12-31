@@ -93,10 +93,10 @@ void RangeThread::sweepForward(uint16_t dist) {
 
 void RangeThread::sweepStep(uint16_t dist) {
     uint32_t now = om::ticks();
-    uint32_t cycleTicks = now - px->lastState;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
+    uint32_t cycleTicks = now - px->lastState;
 
     int8_t iHdg = 2;
     switch (py->heading) {
@@ -122,6 +122,7 @@ void RangeThread::sweepStep(uint16_t dist) {
     double er4 = h / cos(a+2*da);
 
     CRGB curLed = ledThread.leds[0];
+    uint8_t blue = 0xff;
     int32_t diffDist = 0;
     switch (py->heading) {
     case HEADING_LFT:     
@@ -152,16 +153,15 @@ void RangeThread::sweepStep(uint16_t dist) {
     default: break;
     }
 
-    uint8_t blue = 0x66;
     uint16_t brightness = 255;
-    if (diffDist > STEP_DIFF) { // Very close
+    if (diffDist > STEP_DIFF) { // Downstep
         brightness = (loops % FASTFLASH) < FASTFLASH/2 ? 32 : 255;
         curLed = CRGB(0xff,0,blue);
-        lraThread.setEffect(DRV2605_TRANSITION_HUM_1); 
-    } else if (diffDist < -STEP_DIFF) {
-        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0xcc,blue);
         lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
+    } else if (diffDist < -STEP_DIFF) { // Wall
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        curLed = CRGB(0xff,0x88,blue);
+        lraThread.setEffect(DRV2605_TRANSITION_HUM_1); 
     }
     ledThread.brightness = brightness;
     if (curLed.r != ledThread.leds[0].r ||

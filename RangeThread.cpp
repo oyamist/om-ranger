@@ -31,7 +31,7 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.init();
     distanceSensor.setTimeout(500);
     distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
-    distanceSensor.startContinuous(); // 19mA
+    distanceSensor.startContinuous(msLoop); // 19mA
 
     for (int i = 0; i < HEADING_COUNT; i++) {
         stepHeadings[i] = 0;
@@ -43,6 +43,10 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
 #define FASTFLASH 5
 
 void RangeThread::sweepForward(uint16_t dist) {
+    if (dist < minRange || maxRange < dist) {
+        return;
+    }
+
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
@@ -91,7 +95,7 @@ void RangeThread::sweepForward(uint16_t dist) {
 #define STEP_DIFF 80
 #define STEP_T 0.5
 
-void RangeThread::sweepStep(uint16_t dist) {
+void RangeThread::sweepStepDeprecated(uint16_t dist) {
     uint32_t now = om::ticks();
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
@@ -102,7 +106,7 @@ void RangeThread::sweepStep(uint16_t dist) {
     switch (py->heading) {
     case HEADING_LFT:     iHdg = 0; break;
     case HEADING_CTR_LFT: iHdg = 1; break;
-    case HEADING_IDLE:    iHdg = 2; break;
+    case HEADING_STEADY:    iHdg = 2; break;
     case HEADING_CTR_RHT: iHdg = 3; break;
     case HEADING_RHT:     iHdg = 4; break;
     }
@@ -173,42 +177,118 @@ void RangeThread::sweepStep(uint16_t dist) {
     }
 }
 
+#define STEP_DOWN -100
+#define STEP_UP 100
+#define STEP_CAL_LOOPS 60
+#define STEP_CAL_TC 0.5
+
+void RangeThread::sweepStep(uint16_t d) {
+    uint32_t now = om::ticks();
+    AxisState * px = &accelThread.xState;
+    AxisState * py = &accelThread.yState;
+    AxisState * pz = &accelThread.zState;
+    uint32_t cycleTicks = now - px->lastState;
+
+    if (mode == MODE_IDLE) {
+        uint32_t calMillis = om::millis()-idleMillis;
+        if (0 <= calMillis && calMillis <= STEP_CAL_LOOPS) {
+            stepFloor = dist * STEP_CAL_TC + (1-STEP_CAL_TC)*stepFloor;
+            return;
+        }
+    }
+
+    int32_t dist = stepFloor - d;
+    uint16_t brightness = 0xff;
+    uint8_t blue = 0xff;
+    if (dist < STEP_DOWN) {
+        lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_SHORT_SHARP_1); 
+    } else if (dist < STEP_UP {
+        curLed = CRGB(0,0,blue);
+        uint16_t brightness = 0x88;
+        // do nothing
+    } else if (dist < 250) { // Very close
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        curLed = CRGB(0xff,0,blue);
+        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+    } else if (dist < 350) {
+        curLed = CRGB(0xff,0,blue);                  
+        if (loops % 2 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    } else if (dist < 500) { // Somewhat close
+        curLed = CRGB(0xcc,0x33,blue); 
+        if (loops % 3 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    } else if (dist < 700) {
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        curLed = CRGB(0,0xaa,blue);
+        if (loops % 5 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    } else {
+        curLed = CRGB(0,0xaa,blue);
+        if (loops % 8 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        }
+    }
+    ledThread.brightness = brightness;
+    if (curLed.r != ledThread.leds[0].r ||
+        curLed.g != ledThread.leds[0].g ||
+        curLed.b != ledThread.leds[0].b) 
+    {
+        ledThread.leds[0] = curLed;
+        ledThread.show(SHOWLED_FADE85);
+    }
+}
+
+#define DEG_HORIZONTAL 20
+
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
-    if (px->heading==HEADING_IDLE && 
-        py->heading==HEADING_IDLE && 
-        pz->heading==HEADING_IDLE) {
+    double az = absval((double) pz->valFast); // either flat side up
+    double ay = py->valFast;
+    pitch = round(atan(az/ay) * 180 / PI); // positive up; negative down
+
+    if (px->heading==HEADING_STEADY && 
+        py->heading==HEADING_STEADY && 
+        pz->heading==HEADING_STEADY) {
         ledThread.leds[0] = CRGB(0,0,0); // no contact
         if (mode != MODE_IDLE) { 
             om::println("MODE_IDLE standing by...");
             monitor.quiet(true);
-            //distanceSensor.stopContinuous(); // 0.006mA
+            // stopContinuous() can't be restarted?
+            // so just slow down ranging
+            //distanceSensor.startContinuous(msLoop*100L); 
+            ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
+            ledThread.show(SHOWLED_FADE85);
         }
         mode = MODE_IDLE;
     } else {
         if (mode == MODE_IDLE) {
+            idleMillis = om::millis();
             om::println("Motion detected, active...");
             monitor.quiet(false);
-            //distanceSensor.startContinuous(); // 19mA
+            //distanceSensor.startContinuous(msLoop); // 19mA
         }
         mode = absval(py->valSlow) < 0.5*absval(pz->valSlow) 
             ? MODE_SWEEP_FORWARD  // ranging forward above 60 degrees
             : MODE_SWEEP_STEP;    // ranging down below 60 degrees
     }
-    if (mode == MODE_IDLE) {
+    bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
+    if (mode == MODE_IDLE && horizontal) {
         return;
     }
 
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-    distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
-    distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
-    uint16_t dist = distFast;
-    if (dist < minRange || maxRange < dist) {
-        return;
+    uint16_t dist = d;
+    if (minRange <= d && d <= maxRange) {
+        distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
+        distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
     }
 
     switch (mode) {

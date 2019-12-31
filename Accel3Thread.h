@@ -9,7 +9,7 @@
 typedef int16_t Heading;
 #define HEADING_LFT     -2
 #define HEADING_CTR_LFT -1
-#define HEADING_IDLE     0
+#define HEADING_STEADY     0
 #define HEADING_CTR_RHT  1
 #define HEADING_RHT      2
 #define HEADING_COUNT    5 
@@ -28,7 +28,7 @@ public:
     uint16_t cycles = 0;
     om::Ticks lastState = 0;
     Heading nextHeading = HEADING_RHT;
-    Heading heading = HEADING_IDLE;
+    Heading heading = HEADING_STEADY;
     bool center = false;
     int16_t data[ACCEL_SAMPLES];
     int16_t maxVal;

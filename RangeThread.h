@@ -41,10 +41,14 @@ protected:
     int32_t distSlow = 0;
     int16_t stepHeadings[HEADING_COUNT];
     uint32_t stepTickLoops = 0;
+    uint32_t idleMillis = 0;
+    int32_t stepFloor = 0;
+    int32_t pitch;
     ModeType mode;
 
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
+    void sweepStepDeprecated(uint16_t dist);
 } RangeThread;
 
 extern RangeThread rangeThread;

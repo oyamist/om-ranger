@@ -45,7 +45,7 @@ void AxisState::addData(int16_t value, int16_t index, int16_t damping) {
 void AxisState::setHeading(int16_t rank, bool damped) {
     Heading h;
     if (damped) {
-        h = HEADING_IDLE;
+        h = HEADING_STEADY;
     } else if (rank <= SWEEP_END) {
         h = HEADING_LFT;
     } else if (rank <= 50) {
@@ -65,7 +65,7 @@ void AxisState::setHeading(int16_t rank, bool damped) {
     if (heading == nextHeading) {
         om::Ticks now = om::ticks();
         if (now - lastState > MAX_CYCLE_TICKS) {
-            heading = HEADING_IDLE;
+            heading = HEADING_STEADY;
         }
         nextHeading = nextHeading == HEADING_RHT 
             ? HEADING_LFT : HEADING_RHT;
@@ -85,7 +85,7 @@ void AxisState::headingToString(char *buf) {
     switch (heading) {
     case HEADING_LFT: sprintf(buf, "%c-:--", id); break;
     case HEADING_CTR_LFT: sprintf(buf, "-%c:--", id); break;
-    case HEADING_IDLE: sprintf(buf, "--%c--", id); break;
+    case HEADING_STEADY: sprintf(buf, "--%c--", id); break;
     case HEADING_CTR_RHT: sprintf(buf, "--:%c-", id); break;
     case HEADING_RHT: sprintf(buf, "--:-%c", id); break;
     default: sprintf(buf, "??%c??", id); break;

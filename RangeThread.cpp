@@ -282,6 +282,8 @@ void RangeThread::loop() {
         }
         mode = pitch > -25 ? MODE_SWEEP_FORWARD : MODE_SWEEP_STEP;
     }
+    uint16_t d = distanceSensor.readRangeContinuousMillimeters();
+
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     if (loops % 10 == 0) {
         om::print("mode:");
@@ -294,13 +296,14 @@ void RangeThread::loop() {
         om::print(pitch);
         om::print(" horizontal:");
         om::print((uint8_t)horizontal);
+        om::print(" d:");
+        om::print(d);
         om::println();
     }
     if (mode == MODE_IDLE && horizontal) {
         return;
     }
 
-    uint16_t d = distanceSensor.readRangeContinuousMillimeters();
     uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
         distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;

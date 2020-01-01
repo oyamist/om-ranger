@@ -17,8 +17,9 @@ typedef enum RangeType {
 
 typedef enum ModeType {
     MODE_SLEEP = 0,   // Inactive
-    MODE_SWEEP_FORWARD = 1,  // Left-right sweep
-    MODE_SWEEP_STEP = 2,   // Floor sweep
+    MODE_SWEEP_FORWARD = 1, // Left-right sweep
+    MODE_SWEEP_STEP = 2,    // Floor sweep
+    MODE_CAL_FLOOR = 3,     // Calibrate floor height
 } ModeType;
 
 #define DIST_FAST 0.5
@@ -40,16 +41,19 @@ protected:
     int32_t distSlow = 0;
     int16_t stepHeadings[HEADING_COUNT];
     uint32_t msIdle = 0;
+    int32_t msCalFloor = 0;
     uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
+    int32_t hFloor = 0;
     int32_t pitch;
     ModeType mode;
 
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
-    void setMode(uint8_t mode);
+    void calFloor(uint16_t dist);
+    void setMode(ModeType mode);
     void updateOledPosition();
-    void updateOledPosition();
+    void lraCalibrating(bool done=false);
 } RangeThread;
 
 extern RangeThread rangeThread;

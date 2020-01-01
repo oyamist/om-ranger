@@ -300,8 +300,8 @@ void RangeThread::loop() {
         om::print(d);
         om::print(" hFloor:");
         om::print(hFloor);
-        om::print(" h:");
-        om::print(h);
+        om::print(" dh:");
+        om::print(h-hFloor);
         om::println();
     }
 

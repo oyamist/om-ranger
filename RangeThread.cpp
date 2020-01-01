@@ -166,7 +166,7 @@ void RangeThread::sweepStep(uint16_t d){
         }
     }
 
-    int32_t dist = stepFloor - d;
+    int32_t dist = h-hFloor;
     uint16_t brightness = 0xff;
     if (dist < STEP_DOWN) {
         lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_SHORT_SHARP_1); 

@@ -48,6 +48,9 @@ protected:
     int32_t h = 0;
     int32_t pitch;
     ModeType mode;
+    AxisState * px = &accelThread.xState;
+    AxisState * py = &accelThread.yState;
+    AxisState * pz = &accelThread.zState;
 
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);

@@ -47,10 +47,6 @@ void RangeThread::sweepForward(uint16_t dist) {
         return;
     }
 
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
-
     uint32_t now = om::ticks();
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
@@ -106,9 +102,6 @@ void RangeThread::lraCalibrating(bool done) {
 #define ELBOW_DIST 300
 
 void RangeThread::calFloor(uint16_t d){
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
     CRGB curLed = ledThread.leds[0];
     int32_t msRemaining = msCalFloor - om::millis();
     uint8_t brightness = 0xff;
@@ -158,9 +151,6 @@ void RangeThread::calFloor(uint16_t d){
  
 void RangeThread::sweepStep(uint16_t d){
     uint32_t now = om::ticks();
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0xff;
@@ -252,10 +242,6 @@ void RangeThread::setMode(ModeType mode) {
 }
 
 void RangeThread::updateOledPosition() {
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
-
     // Update OLED position display
     strcpy(oledThread.lines[1], "");
     px->headingToString(oledThread.lines[2]);
@@ -271,9 +257,6 @@ void RangeThread::updateOledPosition() {
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
     double az = absval((double) pz->valFast); // either flat side up
     double ay = py->valFast;
     pitch = round(90-atan2(az, -ay) * 180 / PI);

@@ -16,7 +16,7 @@ typedef enum RangeType {
 } RangeType;
 
 typedef enum ModeType {
-    MODE_IDLE = 0,   // Inactive
+    MODE_SLEEP = 0,   // Inactive
     MODE_SWEEP_FORWARD = 1,  // Left-right sweep
     MODE_SWEEP_STEP = 2,   // Floor sweep
 } ModeType;
@@ -34,21 +34,22 @@ protected:
     uint16_t msLoop;
     void loop();
     RangeType rng = RNG_UNKNOWN;
-    int32_t lastDist = 8192L;
     uint32_t minRange = 120L;
     uint32_t maxRange = 2000L;
     int32_t distFast = 0;
     int32_t distSlow = 0;
     int16_t stepHeadings[HEADING_COUNT];
-    uint32_t stepTickLoops = 0;
-    uint32_t idleMillis = 0;
+    uint32_t msIdle = 0;
+    uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
     int32_t pitch;
     ModeType mode;
 
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
-    void sweepStepDeprecated(uint16_t dist);
+    void setMode(uint8_t mode);
+    void updateOledPosition();
+    void updateOledPosition();
 } RangeThread;
 
 extern RangeThread rangeThread;

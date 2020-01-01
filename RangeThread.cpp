@@ -37,7 +37,7 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
         stepHeadings[i] = 0;
     }
 
-    mode = MODE_IDLE;
+    mode = MODE_SLEEP;
 }
 #define SLOWFLASH 10
 #define FASTFLASH 5
@@ -92,91 +92,6 @@ void RangeThread::sweepForward(uint16_t dist) {
     }
 }
 
-#define STEP_DIFF 80
-#define STEP_T 0.5
-
-void RangeThread::sweepStepDeprecated(uint16_t dist) {
-    uint32_t now = om::ticks();
-    AxisState * px = &accelThread.xState;
-    AxisState * py = &accelThread.yState;
-    AxisState * pz = &accelThread.zState;
-    uint32_t cycleTicks = now - px->lastState;
-
-    int8_t iHdg = 2;
-    switch (py->heading) {
-    case HEADING_LFT:     iHdg = 0; break;
-    case HEADING_CTR_LFT: iHdg = 1; break;
-    case HEADING_STEADY:    iHdg = 2; break;
-    case HEADING_CTR_RHT: iHdg = 3; break;
-    case HEADING_RHT:     iHdg = 4; break;
-    }
-    stepHeadings[iHdg] = dist*STEP_T + (1-STEP_T)*stepHeadings[iHdg];
-
-    double y = absval(py->valSlow);
-    double z = absval(pz->valSlow);
-    double a = atan(z/y); // ~= atan(z/y) - da/2
-    double w = 180; // distance from sensor to wrist pivot
-    double r1 = stepHeadings[4] + w;    // h/cos(a-da) 
-    double r2 = stepHeadings[3] + w;    // h/cos(a)
-    double r3 = stepHeadings[1] + w;    // h/cos(a+da)
-    double r4 = stepHeadings[0] + w;    // h/cos(a+2*da)
-    double da = a - acos( cos(a) * r2/r1 );
-    double h = (r1*cos(a-da) + r2*cos(a))/2;
-    double er3 = h / cos(a+da);
-    double er4 = h / cos(a+2*da);
-
-    CRGB curLed = ledThread.leds[0];
-    uint8_t blue = 0xff;
-    int32_t diffDist = 0;
-    switch (py->heading) {
-    case HEADING_LFT:     
-        diffDist = r4 - er4;
-        break;
-    case HEADING_CTR_LFT: 
-        diffDist = r3 - er3;
-        break;
-    case HEADING_CTR_RHT: 
-        break;
-    case HEADING_RHT:     
-        curLed = CRGB(0,0xaa,blue);
-        if (loops > stepTickLoops) {
-            stepTickLoops = loops + 10;
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-            om::print(stepHeadings[0]);
-            om::print(", ");
-            om::print(stepHeadings[1]);
-            om::print(", ");
-            om::print(stepHeadings[2]);
-            om::print(", ");
-            om::print(stepHeadings[3]);
-            om::print(", ");
-            om::print(stepHeadings[4]);
-            om::println();
-        }
-        break;
-    default: break;
-    }
-
-    uint16_t brightness = 255;
-    if (diffDist > STEP_DIFF) { // Downstep
-        brightness = (loops % FASTFLASH) < FASTFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0,blue);
-        lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
-    } else if (diffDist < -STEP_DIFF) { // Wall
-        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0x88,blue);
-        lraThread.setEffect(DRV2605_TRANSITION_HUM_1); 
-    }
-    ledThread.brightness = brightness;
-    if (curLed.r != ledThread.leds[0].r ||
-        curLed.g != ledThread.leds[0].g ||
-        curLed.b != ledThread.leds[0].b) 
-    {
-        ledThread.leds[0] = curLed;
-        ledThread.show(SHOWLED_FADE85);
-    }
-}
-
 #define STEP_DOWN -100
 #define STEP_UP 100
 #define STEP_CAL_LOOPS 60
@@ -191,7 +106,7 @@ void RangeThread::sweepStep(uint16_t d) {
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0xff;
 
-    if (mode == MODE_IDLE) {
+    if (mode == MODE_SLEEP) {
         uint32_t calMillis = om::millis()-idleMillis;
         if (0 <= calMillis && calMillis <= STEP_CAL_LOOPS) {
             stepFloor = d * STEP_CAL_TC + (1-STEP_CAL_TC)*stepFloor;
@@ -247,7 +162,47 @@ void RangeThread::sweepStep(uint16_t d) {
     }
 }
 
-#define DEG_HORIZONTAL 20
+void setMode(mode) {
+    if (this->mode == mode) {
+        return;
+    }
+
+    switch (mode) {
+    case MODE_SLEEP:
+        om::println("Idling...");
+        // stopContinuous() can't be restarted?
+        // so just slow down ranging
+        distanceSensor.startContinuous(msLoop*100L); 
+        ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
+        ledThread.show(SHOWLED_FADE90);
+        break;
+    case MODE_SWEEP_FORWARD:
+    case MODE_SWEEP_STEP:
+        if (this->mode == MODE_SLEEP) {
+            msIdle = om::millis();
+            om::println("Activating...");
+            monitor.quiet(false);
+            distanceSensor.startContinuous(msLoop); // 19mA
+        }
+        break;
+    }
+    this->mode = mode;
+}
+
+void RangeThread::updateOledPosition() {
+    AxisState * px = &accelThread.xState;
+    AxisState * py = &accelThread.yState;
+    AxisState * pz = &accelThread.zState;
+
+    // Update OLED position display
+    strcpy(oledThread.lines[1], "");
+    px->headingToString(oledThread.lines[2]);
+    py->headingToString(oledThread.lines[3]);
+    pz->headingToString(oledThread.lines[4]);
+}
+
+#define DEG_HORIZONTAL 10
+#define STEADY_IDLE_MS 2000
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -258,73 +213,49 @@ void RangeThread::loop() {
     double az = absval((double) pz->valFast); // either flat side up
     double ay = py->valFast;
     pitch = round(90-atan2(az, -ay) * 180 / PI);
-
-    if (px->heading==HEADING_STEADY && 
+    bool steady = px->heading==HEADING_STEADY && 
         py->heading==HEADING_STEADY && 
-        pz->heading==HEADING_STEADY) {
-        //ledThread.leds[0] = CRGB(0,0,0); // no contact
-        if (mode != MODE_IDLE) { 
-            om::println("MODE_IDLE standing by...");
-            monitor.quiet(true);
-            // stopContinuous() can't be restarted?
-            // so just slow down ranging
-            distanceSensor.startContinuous(msLoop*100L); 
-            ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
-            ledThread.show(SHOWLED_FADE90);
-        }
-        mode = MODE_IDLE;
-    } else {
-        if (mode == MODE_IDLE) {
-            idleMillis = om::millis();
-            om::println("Motion detected, active...");
-            monitor.quiet(false);
-            distanceSensor.startContinuous(msLoop); // 19mA
-        }
-        mode = pitch > -25 ? MODE_SWEEP_FORWARD : MODE_SWEEP_STEP;
-    }
+        pz->heading==HEADING_STEADY;
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
-    if (loops % 10 == 0) {
-        om::print("mode:");
-        om::print((uint8_t)mode);
-        om::print(" az:");
-        om::print(az);
-        om::print(" ay:");
-        om::print(ay);
-        om::print(" pitch:");
-        om::print(pitch);
-        om::print(" horizontal:");
-        om::print((uint8_t)horizontal);
-        om::print(" d:");
-        om::print(d);
-        om::println();
-    }
-    if (mode == MODE_IDLE && horizontal) {
-        return;
-    }
-
+    uint32_t msNow = om::millis();
     uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
         distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
         distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
     }
 
-    switch (mode) {
-        default:
-        case MODE_SWEEP_FORWARD:
-            sweepForward(dist);
-            break;
-        case MODE_SWEEP_STEP:
-            sweepStep(dist);
-            break;
+    if (steady) {
+        if (horizontal && msNow - msUnsteady > STEADY_IDLE_MS) {
+            setMode(MODE_SLEEP);
+        }
+    } else {
+        msUnsteady = msNow;
+        setMode(pitch > -25 ? MODE_SWEEP_FORWARD : MODE_SWEEP_STEP);
+    }
+    if (loops % 10 == 0) {
+        om::print("mode:");
+        om::print((uint8_t)mode);
+        om::print(" pitch:");
+        om::print(pitch);
+        om::print(" d:");
+        om::print(d);
+        om::print(" dSlowFast:");
+        om::print(distFast-distSlow);
+        om::println();
     }
 
-    lastDist = dist;
-
-    // Update OLED position display
-    strcpy(oledThread.lines[1], "");
-    px->headingToString(oledThread.lines[2]);
-    py->headingToString(oledThread.lines[3]);
-    pz->headingToString(oledThread.lines[4]);
+    if (mode == MODE_SWEEP_FORWARD) {
+        sweepForward(dist);
+        updateOledPosition();
+    } else if (mode == MODE_SWEEP_STEP) {
+        sweepStep(dist);
+        updateOledPosition();
+    } else if (mode == MODE_SLEEP) {
+        // Do nothing
+    } else {
+        om::print("UNKNOWN MODE");
+        om::print(mode);
+        om::println();
+    }
 }

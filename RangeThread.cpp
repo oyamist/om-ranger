@@ -110,7 +110,6 @@ void RangeThread::calFloor(uint16_t d){
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
     CRGB curLed = ledThread.leds[0];
-    uint32_t h = (distSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
     int32_t msRemaining = msCalFloor - om::millis();
     uint8_t brightness = 0xff;
     if (msRemaining < 0) {
@@ -291,6 +290,7 @@ void RangeThread::loop() {
     } 
     int32_t dFastSlow = distFast - distSlow;
     bool steadyDist = absval(dFastSlow) < STEADY_DIST;
+    h = (distSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
 
     if (steady) {
         if (horizontal && msNow - msUnsteady > STEADY_IDLE_MS) {
@@ -315,10 +315,10 @@ void RangeThread::loop() {
         om::print(pitch);
         om::print(" d:");
         om::print(d);
-        om::print(" dSlowFast:");
-        om::print(distFast-distSlow);
         om::print(" hFloor:");
         om::print(hFloor);
+        om::print(" h:");
+        om::print(h);
         om::println();
     }
 

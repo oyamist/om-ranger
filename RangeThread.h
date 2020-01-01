@@ -45,6 +45,7 @@ protected:
     uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
     int32_t hFloor = 0;
+    int32_t h = 0;
     int32_t pitch;
     ModeType mode;
 

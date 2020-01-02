@@ -166,7 +166,7 @@ void RangeThread::sweepStep(uint16_t d){
         }
     }
 
-    int32_t dist = h-hFloor;
+    int32_t dist = hFloor-h;
     uint16_t brightness = 0xff;
     if (dist < STEP_DOWN) {
         lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_SHORT_SHARP_1); 
@@ -182,23 +182,23 @@ void RangeThread::sweepStep(uint16_t d){
     } else if (dist < 350) {
         curLed = CRGB(0xff,0x33,blue);                  
         if (loops % 2 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+   //         lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     } else if (dist < 500) { // Somewhat close
         curLed = CRGB(0xcc,0x33,blue); 
         if (loops % 3 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+    //        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     } else if (dist < 700) {
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
         curLed = CRGB(0,0xaa,blue);
         if (loops % 5 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+      //      lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     } else {
         curLed = CRGB(0,0xaa,blue);
         if (loops % 8 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+     //       lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     }
     ledThread.brightness = brightness;
@@ -253,6 +253,7 @@ void RangeThread::updateOledPosition() {
 #define STEADY_IDLE_MS 2000
 #define PITCH_STEP -25
 #define STEADY_DIST 15
+#define STEADY_X 15
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -274,18 +275,19 @@ void RangeThread::loop() {
     int32_t dFastSlow = distFast - distSlow;
     bool steadyDist = absval(dFastSlow) < STEADY_DIST;
     h = (distSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
-
+    int32_t xRange = px->maxVal - px->minVal;
+    bool steadyX = xRange < STEADY_X; 
     if (steady) {
         if (horizontal && msNow - msUnsteady > STEADY_IDLE_MS) {
             setMode(MODE_SLEEP);
-        } else if (pitch <= PITCH_STEP && steadyDist) {
+        } else if (pitch <= PITCH_STEP && steadyDist && steadyX) {
             setMode(MODE_CAL_FLOOR);        
         }
     } else {
         msUnsteady = msNow;
         if (pitch > PITCH_STEP) {
             setMode(MODE_SWEEP_FORWARD);
-        } else if (steadyDist) {
+        } else if (steadyDist && steadyX) {
             setMode(MODE_CAL_FLOOR);
         } else {
             setMode(MODE_SWEEP_STEP);
@@ -302,6 +304,8 @@ void RangeThread::loop() {
         om::print(hFloor);
         om::print(" dh:");
         om::print(h-hFloor);
+        om::print(" xRange:");
+        om::print(xRange);
         om::println();
     }
 

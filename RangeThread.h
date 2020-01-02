@@ -22,9 +22,6 @@ typedef enum ModeType {
     MODE_CAL_FLOOR = 3,     // Calibrate floor height
 } ModeType;
 
-#define DIST_FAST 0.5
-#define DIST_SLOW 0.15
-
 typedef class RangeThread : om::Thread {
 public:
     RangeThread();
@@ -39,6 +36,7 @@ protected:
     uint32_t maxRange = 2000L;
     int32_t distFast = 0;
     int32_t distSlow = 0;
+    int32_t distSleep = 2000L;
     int16_t stepHeadings[HEADING_COUNT];
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;

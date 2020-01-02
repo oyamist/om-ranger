@@ -91,9 +91,13 @@ void RangeThread::sweepForward(uint16_t dist) {
 #define CAL_FLOOR_TC 0.5
 void RangeThread::lraCalibrating(bool done) {
     if (done) {
-        if (loops % 16 == 0) lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
+        if (loops % 16 == 0) {
+            lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
+        }
     } else {
-        if (loops % 8 == 0) lraThread.setEffect(DRV2605_LONG_DOUBLE_TICK_SHARP_1); 
+        if (loops % 16 == 0) {
+            lraThread.setEffect(DRV2605_SOFT_BUMP_100); 
+        }
     }
 }
 
@@ -144,8 +148,8 @@ void RangeThread::calFloor(uint16_t d){
     }
 }
 
-#define STEP_DOWN -100
-#define STEP_UP 100
+#define STEP_DOWN -75
+#define STEP_UP 75
 #define STEP_CAL_LOOPS 60
 #define STEP_CAL_TC 0.5
  
@@ -153,19 +157,7 @@ void RangeThread::sweepStep(uint16_t d){
     uint32_t now = om::ticks();
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
-    uint8_t blue = 0xff;
-
-    if (mode == MODE_SLEEP) {
-        uint32_t calMillis = om::millis()-msIdle;
-        if (0 <= calMillis && calMillis <= STEP_CAL_LOOPS) {
-            stepFloor = d * STEP_CAL_TC + (1-STEP_CAL_TC)*stepFloor;
-            curLed = CRGB(0x0,0x88,blue);
-            ledThread.leds[0] = curLed;
-            ledThread.show(SHOWLED_FADE85);
-            return;
-        }
-    }
-
+    uint8_t blue = 0x33;
     int32_t dist = hFloor-h;
     uint16_t brightness = 0xff;
     if (dist < STEP_DOWN) {
@@ -175,30 +167,25 @@ void RangeThread::sweepStep(uint16_t d){
         curLed = CRGB(0,0,blue);
         uint16_t brightness = 0x88;
         // do nothing
-    } else if (dist < 250) { // Very close
+    } else if (dist > 450) { 
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0x33,blue);
+        curLed = CRGB(0xff,0,blue);
         lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-    } else if (dist < 350) {
-        curLed = CRGB(0xff,0x33,blue);                  
+    } else if (dist > 350) {
+        curLed = CRGB(0xff,0,blue);                  
         if (loops % 2 == 0) {
-   //         lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
-    } else if (dist < 500) { // Somewhat close
-        curLed = CRGB(0xcc,0x33,blue); 
-        if (loops % 3 == 0) {
-    //        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        }
-    } else if (dist < 700) {
+    } else if (dist > 250) {
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0,0xaa,blue);
-        if (loops % 5 == 0) {
-      //      lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        curLed = CRGB(0xcc,0x33,blue);                  
+        if (loops % 3 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     } else {
-        curLed = CRGB(0,0xaa,blue);
-        if (loops % 8 == 0) {
-     //       lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
+        curLed = CRGB(0xcc,0x33,blue); 
+        if (loops % 5 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
         }
     }
     ledThread.brightness = brightness;
@@ -222,8 +209,9 @@ void RangeThread::setMode(ModeType mode) {
         // stopContinuous() can't be restarted?
         // so just slow down ranging
         distanceSensor.startContinuous(msLoop*100L); 
+        monitor.quiet(false);
         ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
-        ledThread.show(SHOWLED_FADE90);
+        ledThread.show(SHOWLED_FADE85);
         break;
     case MODE_CAL_FLOOR: 
         msCalFloor = om::millis() + 8*CAL_FLOOR_DT;
@@ -254,6 +242,11 @@ void RangeThread::updateOledPosition() {
 #define PITCH_STEP -25
 #define STEADY_DIST 15
 #define STEADY_X 15
+#define SLEEP_DIST 100
+#define DIST_FAST 0.5
+#define DIST_SLOW 0.15
+#define DIST_SLEEP 0.075 
+
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -272,15 +265,17 @@ void RangeThread::loop() {
         distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
         distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
     } 
+    distSleep = d * DIST_SLEEP + (1-DIST_SLEEP) * distSleep;
     int32_t dFastSlow = distFast - distSlow;
     bool steadyDist = absval(dFastSlow) < STEADY_DIST;
     h = (distSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
     int32_t xRange = px->maxVal - px->minVal;
     bool steadyX = xRange < STEADY_X; 
-    if (steady) {
-        if (horizontal && msNow - msUnsteady > STEADY_IDLE_MS) {
-            setMode(MODE_SLEEP);
-        } else if (pitch <= PITCH_STEP && steadyDist && steadyX) {
+    bool still = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
+    if (distSleep < SLEEP_DIST || steady && still) {
+        setMode(MODE_SLEEP);
+    } else if (steady) {
+        if (pitch <= PITCH_STEP && steadyDist && steadyX) {
             setMode(MODE_CAL_FLOOR);        
         }
     } else {

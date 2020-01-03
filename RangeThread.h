@@ -37,12 +37,13 @@ protected:
     int32_t distFast = 0;
     int32_t distSlow = 0;
     int32_t distSleep = 2000L;
-    int16_t stepHeadings[HEADING_COUNT];
+    int16_t dhx[HEADING_COUNT];
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;
     uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
     int32_t hFloor = 0;
+    int32_t hCal = 0;
     int32_t h = 0;
     int32_t pitch;
     ModeType mode;

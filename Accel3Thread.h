@@ -29,12 +29,14 @@ public:
     om::Ticks lastState = 0;
     Heading nextHeading = HEADING_RHT;
     Heading heading = HEADING_STEADY;
+    Heading lastHeading = HEADING_STEADY;
     bool center = false;
     int16_t data[ACCEL_SAMPLES];
     int16_t maxVal;
     int16_t minVal;
     float valFast;
     float valSlow;
+    float dir = 0;
 
     AxisState(char id, bool invert=false);
     void addData(int16_t value, int16_t index, int16_t damping);

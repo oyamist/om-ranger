@@ -311,20 +311,28 @@ void RangeThread::loop() {
             setMode(MODE_SWEEP_STEP);
         }
     }
-    if (loops % 10 == 0) {
-        om::print("mode:");
-        om::print((uint8_t)mode);
-        om::print(" pitch:");
-        om::print(pitch);
-        om::print(" d:");
-        om::print(d);
-        om::print(" hFloor:");
-        om::print(hFloor);
-        om::print(" dhxAvg:");
+    if (loops % 3 == 0) {
+     //   om::print("mode:");
+     //   om::print((uint8_t)mode);
+ //       om::print(" pitch:");
+   //     om::print(pitch);
+     //   om::print(" d:");
+       // om::print(d);
+        //om::print(" hFloor:");
+        //om::print(hFloor);
+        //om::print(" dhxAvg:");
+        char *dir = "<";
+        if (px->dir > 0.5) {
+            dir = ">";
+        }
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
-            if (ix == 2) continue;
-            if (ix) { om::print(" "); }
-            om::print((int16_t)(dhx[ix]-dhxAvg));
+            om::print(" "); 
+            if (ix == (int) px->heading+2) {
+                om::print(dir);
+            } else {
+                om::print("-");
+            }
+            
         }
         om::println();
     }

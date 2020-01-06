@@ -11,6 +11,7 @@
 #define MAX_CYCLE_TICKS 1500
 #define TC_FAST 0.5
 #define TC_SLOW 0.6
+#define TC_DIR 0.4
 
 AxisState::AxisState(char id, bool invert) 
     :   id(id), invert(invert), valFast(0), valSlow(0), 
@@ -61,15 +62,24 @@ void AxisState::setHeading(int16_t rank, bool damped) {
     if (h*heading < 0) {
       center = true;
     }
-    heading = h;
-    if (heading == nextHeading) {
+
+    if (h == nextHeading) {
         om::Ticks now = om::ticks();
         if (now - lastState > MAX_CYCLE_TICKS) {
-            heading = HEADING_STEADY;
+            h = HEADING_STEADY;
         }
         nextHeading = nextHeading == HEADING_RHT 
             ? HEADING_LFT : HEADING_RHT;
         lastState = now;
+    }
+    if (heading != h) {
+        lastHeading = heading;
+        heading = h;
+        if (lastHeading < heading) {
+            dir = 1*TC_DIR + (1-TC_DIR)*dir;
+        } else {
+            dir = 0*TC_DIR + (1-TC_DIR)*dir;
+        }
     }
 }
 

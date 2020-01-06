@@ -38,6 +38,7 @@ protected:
     int32_t distSlow = 0;
     int32_t distSleep = 2000L;
     int16_t dhx[HEADING_COUNT];
+    int16_t dhxAvg = 0;
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;
     uint32_t msUnsteady = 0;

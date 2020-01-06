@@ -163,22 +163,25 @@ void RangeThread::sweepStep(uint16_t d){
     int32_t dist = hFloor-h;
     uint16_t brightness = 0xff;
     int32_t dh = h - hFloor;
-    switch (px->heading) {
-    case HEADING_LFT:
-        dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
-        break;
-    case HEADING_CTR_LFT:
-        dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
-        break;
-    case HEADING_STEADY:
-        dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
-        break;
-    case HEADING_CTR_RHT:
-        dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
-        break;
-    case HEADING_RHT:
-        dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
-        break;
+    if (minRange <= d && d <= maxRange) {
+        dhxAvg = (dhx[0]+dhx[1]+dhx[3]+dhx[4])/4;
+        switch (px->heading) {
+        case HEADING_LFT:
+            dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
+            break;
+        case HEADING_CTR_LFT:
+            dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
+            break;
+        case HEADING_STEADY:
+            dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
+            break;
+        case HEADING_CTR_RHT:
+            dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
+            break;
+        case HEADING_RHT:
+            dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
+            break;
+        }
     }
     if (dist < STEP_DOWN) {
         lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_SHORT_SHARP_1); 
@@ -259,7 +262,7 @@ void RangeThread::updateOledPosition() {
 
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 2000
-#define PITCH_STEP -30
+#define PITCH_STEP -25
 #define STEADY_DIST 15
 #define STEADY_X 15
 #define SLEEP_DIST 100
@@ -317,10 +320,11 @@ void RangeThread::loop() {
         om::print(d);
         om::print(" hFloor:");
         om::print(hFloor);
-        om::print(" dhx:");
+        om::print(" dhxAvg:");
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
-            ix && om::print(" ");
-            om::print(dhx[ix]);
+            if (ix == 2) continue;
+            if (ix) { om::print(" "); }
+            om::print((int16_t)(dhx[ix]-dhxAvg));
         }
         om::println();
     }

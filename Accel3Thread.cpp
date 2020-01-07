@@ -9,9 +9,8 @@
 /////////////// AxisState /////////////////
 
 #define MAX_CYCLE_TICKS 1500
-#define TC_FAST 0.5
-#define TC_SLOW 0.6
-#define TC_DIR 0.4
+#define TC_FAST 0.49
+#define TC_SLOW 0.28
 
 AxisState::AxisState(char id, bool invert) 
     :   id(id), invert(invert), valFast(0), valSlow(0), 
@@ -30,6 +29,12 @@ void AxisState::addData(int16_t value, int16_t index, int16_t damping) {
     int16_t rank = 0;
     valFast = value * TC_FAST + (1-TC_FAST) * valFast;
     valSlow = value * TC_SLOW + (1-TC_SLOW) * valSlow;
+    dir = valFast < valSlow ? -1 : 1;
+    if (valFast < valSlow) {
+        dir = 0;
+    } else {
+        dir = 1;
+    }
     maxVal = minVal = value;
     for (int i = 0; i < ACCEL_SAMPLES; i++) {
         if (data[i] < minVal) { minVal = data[i]; }
@@ -75,11 +80,6 @@ void AxisState::setHeading(int16_t rank, bool damped) {
     if (heading != h) {
         lastHeading = heading;
         heading = h;
-        if (lastHeading < heading) {
-            dir = 1*TC_DIR + (1-TC_DIR)*dir;
-        } else {
-            dir = 0*TC_DIR + (1-TC_DIR)*dir;
-        }
     }
 }
 

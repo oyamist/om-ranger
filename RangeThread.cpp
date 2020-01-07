@@ -149,8 +149,8 @@ void RangeThread::calFloor(uint16_t d){
     }
 }
 
-#define STEP_DOWN -75
-#define STEP_UP 75
+#define STEP_DOWN -50
+#define STEP_UP 50
 #define STEP_CAL_LOOPS 60
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
@@ -160,56 +160,43 @@ void RangeThread::sweepStep(uint16_t d){
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0x33;
-    int32_t dist = hFloor-h;
+    int32_t dist = 0;
     uint16_t brightness = 0xff;
     int32_t dh = h - hFloor;
     if (minRange <= d && d <= maxRange) {
-        dhxAvg = (dhx[0]+dhx[1]+dhx[3]+dhx[4])/4;
+        dhxAvg = (dhx[1]+dhx[3])/2;
         switch (px->heading) {
         case HEADING_LFT:
             dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
+            dist = dir < 0 ? dhx[0] - dhxAvg : 0;
             break;
         case HEADING_CTR_LFT:
             dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
+            dist = dir < 0 ? (dhx[0] - dhxAvg)/2 : 0;
             break;
         case HEADING_STEADY:
             dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
             break;
         case HEADING_CTR_RHT:
             dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
+            dist = dir > 0 ? (dhx[4] - dhxAvg)/2 : 0;
             break;
         case HEADING_RHT:
             dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
+            dist = dir > 0 ? dhx[4] - dhxAvg : 0;
             break;
         }
     }
     if (dist < STEP_DOWN) {
-        lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_SHORT_SHARP_1); 
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
         curLed = CRGB(0xff,0,blue);
    } else if (dist < STEP_UP) {
         curLed = CRGB(0,0,blue);
-        uint16_t brightness = 0x88;
         // do nothing
-    } else if (dist > 450) { 
-        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xff,0,blue);
-        lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-    } else if (dist > 350) {
-        curLed = CRGB(0xff,0,blue);                  
-        if (loops % 2 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        }
-    } else if (dist > 250) {
-        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        curLed = CRGB(0xcc,0x33,blue);                  
-        if (loops % 3 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        }
     } else {
-        curLed = CRGB(0xcc,0x33,blue); 
-        if (loops % 5 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_30); 
-        }
+        curLed = CRGB(0xff,0x66,blue);
+        lraThread.setEffect(DRV2605_SHARP_CLICK_30); 
     }
     ledThread.brightness = brightness;
     if (curLed.r != ledThread.leds[0].r ||
@@ -312,15 +299,6 @@ void RangeThread::loop() {
         }
     }
     if (loops % 3 == 0) {
-     //   om::print("mode:");
-     //   om::print((uint8_t)mode);
- //       om::print(" pitch:");
-   //     om::print(pitch);
-     //   om::print(" d:");
-       // om::print(d);
-        //om::print(" hFloor:");
-        //om::print(hFloor);
-        //om::print(" dhxAvg:");
         char *dir = "<";
         if (px->dir > 0.5) {
             dir = ">";

@@ -161,29 +161,25 @@ void RangeThread::sweepStep(uint16_t d){
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0x33;
     uint16_t brightness = 0xff;
-    int32_t dh = h - hFloor;
-    int32_t dist = 0;
+    int32_t dh = hFloor-h;
+    int32_t dist = dh;
     if (minRange <= d && d <= maxRange) {
         dhxAvg = (dhx[1]+dhx[3])/2;
         switch (px->heading) {
         case HEADING_LFT:
             dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
-            dist = px->dir < 0.5 ? dhx[0] - dhxAvg : 0;
             break;
         case HEADING_CTR_LFT:
             dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
-            dist = px->dir < 0.5 ? (dhx[0] - dhxAvg)/2 : 0;
             break;
         case HEADING_STEADY:
             dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
             break;
         case HEADING_CTR_RHT:
             dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
-            dist = px->dir >= 0.5 ? (dhx[4] - dhxAvg)/2 : 0;
             break;
         case HEADING_RHT:
             dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
-            dist = px->dir >= 0.5 ? dhx[4] - dhxAvg : 0;
             break;
         }
     }
@@ -191,12 +187,12 @@ void RangeThread::sweepStep(uint16_t d){
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
         lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
         curLed = CRGB(0xff,0,blue);
-   } else if (dist < STEP_UP) {
-        curLed = CRGB(0,0,blue);
-        // do nothing
-    } else {
+    } else if (dist > STEP_UP) {
         curLed = CRGB(0x66,0xff,blue);
         lraThread.setEffect(DRV2605_SHARP_CLICK_30); 
+    } else {
+        curLed = CRGB(0,0,blue);
+        // do nothing
     }
     ledThread.brightness = brightness;
     if (curLed.r != ledThread.leds[0].r ||
@@ -250,6 +246,7 @@ void RangeThread::updateOledPosition() {
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 2000
 #define PITCH_STEP -25
+#define PITCH_CAL -80
 #define STEADY_DIST 15
 #define STEADY_X 15
 #define SLEEP_DIST 100
@@ -285,14 +282,14 @@ void RangeThread::loop() {
     if (distSleep < SLEEP_DIST || steady && still) {
         setMode(MODE_SLEEP);
     } else if (steady) {
-        if (pitch <= PITCH_STEP && steadyDist && steadyX) {
+        if (pitch <= PITCH_CAL && steadyDist && steadyX) {
             setMode(MODE_CAL_FLOOR);        
         }
     } else {
         msUnsteady = msNow;
         if (pitch > PITCH_STEP) {
             setMode(MODE_SWEEP_FORWARD);
-        } else if (steadyDist && steadyX) {
+        } else if (pitch <= PITCH_CAL && steadyDist && steadyX) {
             setMode(MODE_CAL_FLOOR);
         } else {
             setMode(MODE_SWEEP_STEP);

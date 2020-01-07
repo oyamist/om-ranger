@@ -160,30 +160,30 @@ void RangeThread::sweepStep(uint16_t d){
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0x33;
-    int32_t dist = 0;
     uint16_t brightness = 0xff;
     int32_t dh = h - hFloor;
+    int32_t dist = 0;
     if (minRange <= d && d <= maxRange) {
         dhxAvg = (dhx[1]+dhx[3])/2;
         switch (px->heading) {
         case HEADING_LFT:
             dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
-            dist = dir < 0 ? dhx[0] - dhxAvg : 0;
+            dist = px->dir < 0.5 ? dhx[0] - dhxAvg : 0;
             break;
         case HEADING_CTR_LFT:
             dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
-            dist = dir < 0 ? (dhx[0] - dhxAvg)/2 : 0;
+            dist = px->dir < 0.5 ? (dhx[0] - dhxAvg)/2 : 0;
             break;
         case HEADING_STEADY:
             dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
             break;
         case HEADING_CTR_RHT:
             dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
-            dist = dir > 0 ? (dhx[4] - dhxAvg)/2 : 0;
+            dist = px->dir >= 0.5 ? (dhx[4] - dhxAvg)/2 : 0;
             break;
         case HEADING_RHT:
             dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
-            dist = dir > 0 ? dhx[4] - dhxAvg : 0;
+            dist = px->dir >= 0.5 ? dhx[4] - dhxAvg : 0;
             break;
         }
     }
@@ -195,7 +195,7 @@ void RangeThread::sweepStep(uint16_t d){
         curLed = CRGB(0,0,blue);
         // do nothing
     } else {
-        curLed = CRGB(0xff,0x66,blue);
+        curLed = CRGB(0x66,0xff,blue);
         lraThread.setEffect(DRV2605_SHARP_CLICK_30); 
     }
     ledThread.brightness = brightness;
@@ -299,14 +299,12 @@ void RangeThread::loop() {
         }
     }
     if (loops % 3 == 0) {
-        char *dir = "<";
-        if (px->dir > 0.5) {
-            dir = ">";
-        }
+        om::print("dh");
+        om::print((int16_t)(h-hFloor));
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
             om::print(" "); 
             if (ix == (int) px->heading+2) {
-                om::print(dir);
+                om::print(px->dir > 0.5 ? ">" : "<");
             } else {
                 om::print("-");
             }

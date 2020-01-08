@@ -102,8 +102,7 @@ void RangeThread::lraCalibrating(bool done) {
 }
 
 #define CAL_FLOOR_DT 400L
-#define WAND_DIST 170
-#define ELBOW_DIST 300
+#define WAND_DIST 90
 
 void RangeThread::calFloor(uint16_t d){
     CRGB curLed = ledThread.leds[0];
@@ -185,11 +184,13 @@ void RangeThread::sweepStep(uint16_t d){
     }
     if (dist < STEP_DOWN) {
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
+        lraThread.setEffect(DRV2605_SHARP_TICK_1); 
         curLed = CRGB(0xff,0,blue);
     } else if (dist > STEP_UP) {
         curLed = CRGB(0x66,0xff,blue);
-        lraThread.setEffect(DRV2605_SHARP_CLICK_30); 
+        if (loops % 4 == 0) {
+            lraThread.setEffect(DRV2605_TRANSITION_RAMP_UP_SHORT_SHARP_1_100); 
+        }
     } else {
         curLed = CRGB(0,0,blue);
         // do nothing
@@ -247,7 +248,7 @@ void RangeThread::updateOledPosition() {
 #define STEADY_IDLE_MS 2000
 #define PITCH_STEP -25
 #define PITCH_CAL -80
-#define STEADY_DIST 15
+#define STEADY_DIST 30
 #define STEADY_X 15
 #define SLEEP_DIST 100
 #define DIST_FAST 0.5
@@ -282,7 +283,7 @@ void RangeThread::loop() {
     if (distSleep < SLEEP_DIST || steady && still) {
         setMode(MODE_SLEEP);
     } else if (steady) {
-        if (pitch <= PITCH_CAL && steadyDist && steadyX) {
+        if (pitch <= PITCH_CAL && steadyDist) {
             setMode(MODE_CAL_FLOOR);        
         }
     } else {
@@ -298,6 +299,8 @@ void RangeThread::loop() {
     if (loops % 3 == 0) {
         om::print("dh");
         om::print((int16_t)(h-hFloor));
+        om::print(" pitch:");
+        om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
             om::print(" "); 
             if (ix == (int) px->heading+2) {

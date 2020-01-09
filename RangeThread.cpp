@@ -101,7 +101,7 @@ void RangeThread::lraCalibrating(bool done) {
 }
 
 #define CAL_FLOOR_DT 400L
-#define WAND_DIST 90
+#define PIVOT_DIST 300
 
 void RangeThread::calFloor(uint16_t d){
     CRGB curLed = ledThread.leds[0];
@@ -215,7 +215,7 @@ void RangeThread::setMode(ModeType mode, bool force) {
         // stopContinuous() can't be restarted?
         // so just slow down ranging
         distanceSensor.startContinuous(msLoop*100L); 
-        monitor.quiet(false);
+        monitor.quiet(true);
         ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
         ledThread.show(SHOWLED_FADE50);
         break;
@@ -229,6 +229,7 @@ void RangeThread::setMode(ModeType mode, bool force) {
             om::println("Activating...");
             monitor.quiet(false);
             distanceSensor.startContinuous(msLoop); // 19mA
+            om::println("Ranging...");
         }
         break;
     }
@@ -246,13 +247,14 @@ void RangeThread::updateOledPosition() {
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 2000
 #define PITCH_STEP -25
-#define PITCH_CAL -80
+#define PITCH_CAL -82
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
+    uint32_t msNow = om::millis();
     double az = absval((double) pz->valFast); // either flat side up
     double ay = py->valFast;
     pitch = round(90-atan2(az, -ay) * 180 / PI);
@@ -262,7 +264,6 @@ void RangeThread::loop() {
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
-    uint32_t msNow = om::millis();
     float err = abs(d - eaDistSlow);
     eaDistErr = expAvg(err, eaDistErr, EATC_6);
     uint16_t dist = d;
@@ -271,12 +272,12 @@ void RangeThread::loop() {
         eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     } 
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
-    h = (eaDistSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
+    h = (eaDistSlow+PIVOT_DIST) * sin(-pitch * PI / 180.0);
     int32_t xRange = px->maxVal - px->minVal;
     bool still = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
 
     // Chose mode of operation
-    if (eaDistSleep < SLEEP_DIST || still) {`
+    if (eaDistSleep < SLEEP_DIST || still) {
         setMode(MODE_SLEEP);
     } else if (pitch <= PITCH_CAL) {
         setMode(MODE_CAL_FLOOR, eaDistErr > STEADY_DIST);        

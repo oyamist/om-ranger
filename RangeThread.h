@@ -37,7 +37,7 @@ protected:
     int32_t eaDistFast = 0;
     int32_t eaDistSlow = 0;
     int32_t eaDistSleep = 2000L;
-    inst32_t eaDistErr = 0; 
+    int32_t eaDistErr = 0; 
     int16_t dhx[HEADING_COUNT];
     int16_t dhxAvg = 0;
     uint32_t msIdle = 0;

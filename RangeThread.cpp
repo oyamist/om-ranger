@@ -297,7 +297,9 @@ void RangeThread::loop() {
         }
     }
     if (loops % 3 == 0) {
-        om::print("dh");
+        om::print(" dist");
+        om::print(dist);
+        om::print(" dh");
         om::print((int16_t)(h-hFloor));
         om::print(" pitch:");
         om::print(pitch);

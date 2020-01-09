@@ -254,7 +254,7 @@ void RangeThread::updateOledPosition() {
 #define DIST_FAST 0.5
 #define DIST_SLOW 0.15
 #define DIST_SLEEP 0.075 
-
+#define TC_ERR 0.28
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -268,6 +268,9 @@ void RangeThread::loop() {
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     uint32_t msNow = om::millis();
+    float err = d - distSlow;
+    float sqrErr = err * err;
+    seDist = sqrErr * TC_ERR + (1-TC_ERR) * seDist;
     uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
         distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
@@ -299,6 +302,8 @@ void RangeThread::loop() {
     if (loops % 3 == 0) {
         om::print(" dist");
         om::print(dist);
+        om::print(" seDist:");
+        om::print(seDist);
         om::print(" dh");
         om::print((int16_t)(h-hFloor));
         om::print(" pitch:");

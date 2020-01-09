@@ -47,6 +47,7 @@ protected:
     int32_t hCal = 0;
     int32_t h = 0;
     int32_t pitch;
+    float seDist = 0; /* exponential moving average squared error */
     ModeType mode;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;

@@ -56,7 +56,7 @@ protected:
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
     void calFloor(uint16_t dist);
-    void setMode(ModeType mode);
+    void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
     void lraCalibrating(bool done=false);
 } RangeThread;

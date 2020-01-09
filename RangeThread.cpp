@@ -88,7 +88,6 @@ void RangeThread::sweepForward(uint16_t dist) {
     }
 }
 
-#define CAL_FLOOR_TC 0.5
 void RangeThread::lraCalibrating(bool done) {
     if (done) {
         if (loops % 16 == 0) {
@@ -108,7 +107,7 @@ void RangeThread::calFloor(uint16_t d){
     CRGB curLed = ledThread.leds[0];
     int32_t msRemaining = msCalFloor - om::millis();
     uint8_t brightness = 0xff;
-    hCal = h*CAL_FLOOR_TC + (1-CAL_FLOOR_TC)*hCal;
+    hCal = expAvg(h, hCal, EATC_2);
     if (msRemaining < 0) {
         lraCalibrating(true);
         hFloor = hCal;
@@ -205,8 +204,8 @@ void RangeThread::sweepStep(uint16_t d){
     }
 }
 
-void RangeThread::setMode(ModeType mode) {
-    if (this->mode == mode) {
+void RangeThread::setMode(ModeType mode, bool force) {
+    if (this->mode == mode && !force) {
         return;
     }
 
@@ -248,9 +247,8 @@ void RangeThread::updateOledPosition() {
 #define STEADY_IDLE_MS 2000
 #define PITCH_STEP -25
 #define PITCH_CAL -80
-#define STEADY_DIST 30
-#define STEADY_X 15
-#define SLEEP_DIST 100
+#define STEADY_DIST 35
+#define SLEEP_DIST 50
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -261,6 +259,7 @@ void RangeThread::loop() {
     bool steady = px->heading==HEADING_STEADY && 
         py->heading==HEADING_STEADY && 
         pz->heading==HEADING_STEADY;
+    if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     uint32_t msNow = om::millis();
@@ -272,31 +271,26 @@ void RangeThread::loop() {
         eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     } 
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
-    int32_t dFastSlow = eaDistFast - eaDistSlow;
-    bool steadyDist = absval(dFastSlow) < STEADY_DIST;
     h = (eaDistSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
     int32_t xRange = px->maxVal - px->minVal;
-    bool steadyX = xRange < STEADY_X; 
     bool still = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
-    if (eaDistSleep < SLEEP_DIST || steady && still) {
+
+    // Chose mode of operation
+    if (eaDistSleep < SLEEP_DIST || still) {`
         setMode(MODE_SLEEP);
-    } else if (steady) {
-        if (pitch <= PITCH_CAL && steadyDist) {
-            setMode(MODE_CAL_FLOOR);        
-        }
+    } else if (pitch <= PITCH_CAL) {
+        setMode(MODE_CAL_FLOOR, eaDistErr > STEADY_DIST);        
     } else {
-        msUnsteady = msNow;
         if (pitch > PITCH_STEP) {
             setMode(MODE_SWEEP_FORWARD);
-        } else if (pitch <= PITCH_CAL && steadyDist && steadyX) {
-            setMode(MODE_CAL_FLOOR);
         } else {
             setMode(MODE_SWEEP_STEP);
         }
     }
+
     if (loops % 10 == 0) {
-        om::print(" dist");
-        om::print(dist);
+        om::print(" d");
+        om::print(d);
         om::print(" eaDistErr:");
         om::print(eaDistErr);
         om::print(" dh");

@@ -218,7 +218,7 @@ void RangeThread::setMode(ModeType mode) {
         distanceSensor.startContinuous(msLoop*100L); 
         monitor.quiet(false);
         ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
-        ledThread.show(SHOWLED_FADE85);
+        ledThread.show(SHOWLED_FADE50);
         break;
     case MODE_CAL_FLOOR: 
         msCalFloor = om::millis() + 8*CAL_FLOOR_DT;
@@ -254,7 +254,7 @@ void RangeThread::updateOledPosition() {
 #define DIST_FAST 0.5
 #define DIST_SLOW 0.15
 #define DIST_SLEEP 0.075 
-#define TC_ERR 0.28
+#define TC_ERR 0.1
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -269,7 +269,7 @@ void RangeThread::loop() {
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     uint32_t msNow = om::millis();
     float err = d - distSlow;
-    float sqrErr = err * err;
+    float sqrErr = abs(err);
     seDist = sqrErr * TC_ERR + (1-TC_ERR) * seDist;
     uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
@@ -299,7 +299,7 @@ void RangeThread::loop() {
             setMode(MODE_SWEEP_STEP);
         }
     }
-    if (loops % 3 == 0) {
+    if (loops % 10 == 0) {
         om::print(" dist");
         om::print(dist);
         om::print(" seDist:");

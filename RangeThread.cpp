@@ -251,10 +251,6 @@ void RangeThread::updateOledPosition() {
 #define STEADY_DIST 30
 #define STEADY_X 15
 #define SLEEP_DIST 100
-#define DIST_FAST 0.5
-#define DIST_SLOW 0.15
-#define DIST_SLEEP 0.075 
-#define TC_ERR 0.1
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -268,22 +264,21 @@ void RangeThread::loop() {
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     uint32_t msNow = om::millis();
-    float err = d - distSlow;
-    float sqrErr = abs(err);
-    seDist = sqrErr * TC_ERR + (1-TC_ERR) * seDist;
+    float err = abs(d - eaDistSlow);
+    eaDistErr = expAvg(err, eaDistErr, EATC_6);
     uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
-        distFast = d * DIST_FAST + (1-DIST_FAST) * distFast;
-        distSlow = d * DIST_SLOW + (1-DIST_SLOW) * distSlow;
+        eaDistFast = expAvg(d, eaDistFast, EATC_0);
+        eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     } 
-    distSleep = d * DIST_SLEEP + (1-DIST_SLEEP) * distSleep;
-    int32_t dFastSlow = distFast - distSlow;
+    eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
+    int32_t dFastSlow = eaDistFast - eaDistSlow;
     bool steadyDist = absval(dFastSlow) < STEADY_DIST;
-    h = (distSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
+    h = (eaDistSlow+WAND_DIST) * sin(-pitch * PI / 180.0);
     int32_t xRange = px->maxVal - px->minVal;
     bool steadyX = xRange < STEADY_X; 
     bool still = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
-    if (distSleep < SLEEP_DIST || steady && still) {
+    if (eaDistSleep < SLEEP_DIST || steady && still) {
         setMode(MODE_SLEEP);
     } else if (steady) {
         if (pitch <= PITCH_CAL && steadyDist) {
@@ -302,8 +297,8 @@ void RangeThread::loop() {
     if (loops % 10 == 0) {
         om::print(" dist");
         om::print(dist);
-        om::print(" seDist:");
-        om::print(seDist);
+        om::print(" eaDistErr:");
+        om::print(eaDistErr);
         om::print(" dh");
         om::print((int16_t)(h-hFloor));
         om::print(" pitch:");

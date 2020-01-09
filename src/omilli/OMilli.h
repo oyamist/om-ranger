@@ -14,6 +14,32 @@
 #define PI 3.1415926535897932384626433832795
 #endif
 
+/* Exponential Averaging 
+ * =====================
+ * Exponential averaging provides a cheap way to analyze
+ * series of time values. They require only a single memory
+ * location to store the exponentially weighted average of all
+ * preceding values. Exponential averages are computed using
+ * an Exponential Average Time Constant (EATC) that 
+ * controls the stability vs. sensitivity of the average. 
+ * For convenience, we arbitrarily choose a 0-to-1 transition
+ * to determine actual time constant values:
+ *
+ * 1) number of periods for a 0-to-1 transition to be >=0.5
+ * 2) number of periods for a 0-to-1 transition to be >=0.999
+ *
+ * More periods provide stability. 
+ * Fewer periods enhance sensitivity.
+ */
+#define expAvg(v,ea,eatc) ((v)*eatc+(1-eatc)*(ea))
+#define EATC_0 0.50 /* 0/10 periods */
+#define EATC_1 0.49 /* 1/11 periods */
+#define EATC_2 0.29 /* 2/21 periods */
+#define EATC_3 0.20 /* 3/31 periods */
+#define EATC_4 0.15 /* 4/44 periods */
+#define EATC_5 0.12 /* 5/55 periods */
+#define EATC_6 0.10 /* 6/66 periods */
+
 // Argument to setI2CPort() for accessing peripherals
 #define I2CPORT_DISPLAY 0
 #define I2CPORT_LRA 1

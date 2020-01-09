@@ -40,7 +40,7 @@ void LEDThread::setup(uint8_t port, uint16_t msLoop) {
     for (int i = 0; i < NUM_LEDS; i++) {
         leds[i] = CRGB(128,128,128);
     }
-    msPeriod = 400;
+    msPeriod = 150; // LED frame rate 
 
     pinMode(ledPin, OUTPUT);
     FastLED.show();

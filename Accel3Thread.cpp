@@ -9,8 +9,6 @@
 /////////////// AxisState /////////////////
 
 #define MAX_CYCLE_TICKS 1500
-#define TC_FAST 0.49
-#define TC_SLOW 0.28
 
 AxisState::AxisState(char id, bool invert) 
     :   id(id), invert(invert), valFast(0), valSlow(0), 
@@ -27,8 +25,8 @@ void AxisState::addData(int16_t value, int16_t index, int16_t damping) {
     data[index] = value;
 
     int16_t rank = 0;
-    valFast = value * TC_FAST + (1-TC_FAST) * valFast;
-    valSlow = value * TC_SLOW + (1-TC_SLOW) * valSlow;
+    valFast = expAvg(value, valFast, EATC_1);
+    valSlow = expAvg(value, valSlow, EATC_2);
     dir = valFast < valSlow ? -1 : 1;
     if (valFast < valSlow) {
         dir = 0;

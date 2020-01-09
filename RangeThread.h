@@ -34,9 +34,10 @@ protected:
     RangeType rng = RNG_UNKNOWN;
     uint32_t minRange = 120L;
     uint32_t maxRange = 2000L;
-    int32_t distFast = 0;
-    int32_t distSlow = 0;
-    int32_t distSleep = 2000L;
+    int32_t eaDistFast = 0;
+    int32_t eaDistSlow = 0;
+    int32_t eaDistSleep = 2000L;
+    inst32_t eaDistErr = 0; 
     int16_t dhx[HEADING_COUNT];
     int16_t dhxAvg = 0;
     uint32_t msIdle = 0;
@@ -47,7 +48,6 @@ protected:
     int32_t hCal = 0;
     int32_t h = 0;
     int32_t pitch;
-    float seDist = 0; /* exponential moving average squared error */
     ModeType mode;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;

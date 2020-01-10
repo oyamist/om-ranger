@@ -46,6 +46,7 @@ protected:
     int32_t hCal = 0;
     int32_t h = 0;
     int32_t pitch;
+    int32_t phase = 0;
     ModeType mode;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;

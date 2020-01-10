@@ -180,20 +180,30 @@ void RangeThread::sweepStepDeprecated(uint16_t d){
     }
 }
 
+#define STEP_LOOPS 5
+
 void RangeThread::sweepStep(uint16_t d){
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0x33;
     bool distInc = eaDistFast > eaDistSlow;
-    ledThread.brightness = 0xff;
+    uint16_t brightness = 0xff;
 
     if (d > hStick || distInc) { 
+        phase = (loops + 1) % STEP_LOOPS;
+        brightness = 0x33;
         curLed = CRGB(0,0,blue);
-        return; 
+    } else if (d > hStick*0.5) {
+        if (loops % STEP_LOOPS == phase) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
+        }
+        curLed = CRGB(0xff,0,blue);
+    } else {
+        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
+        lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+        curLed = CRGB(0xff,0,blue);
     }
 
-    lraThread.setEffect(DRV2605_SHARP_TICK_1); 
-    curLed = CRGB(0xff,0,blue);
-
+    ledThread.brightness = brightness;
     if (curLed.r != ledThread.leds[0].r ||
         curLed.g != ledThread.leds[0].g ||
         curLed.b != ledThread.leds[0].b) 

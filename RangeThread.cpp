@@ -33,10 +33,6 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
     distanceSensor.startContinuous(msLoop); // 19mA
 
-    for (int i = 0; i < HEADING_COUNT; i++) {
-        dhx[i] = 0;
-    }
-
     mode = MODE_SLEEP;
 }
 #define SLOWFLASH 10
@@ -110,7 +106,7 @@ void RangeThread::calFloor(uint16_t d){
     hCal = expAvg(h, hCal, EATC_2);
     if (msRemaining < 0) {
         lraCalibrating(true);
-        hFloor = hCal;
+        hStick = hCal;
         curLed = CRGB(0x44, 0x44, 0xff);
     } else if (msRemaining < CAL_FLOOR_DT) {
         lraCalibrating(); 
@@ -153,34 +149,14 @@ void RangeThread::calFloor(uint16_t d){
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
  
-void RangeThread::sweepStep(uint16_t d){
+void RangeThread::sweepStepDeprecated(uint16_t d){
     uint32_t now = om::ticks();
     uint32_t cycleTicks = now - px->lastState;
     CRGB curLed = ledThread.leds[0];
     uint8_t blue = 0x33;
     uint16_t brightness = 0xff;
-    int32_t dh = hFloor-h;
+    int32_t dh = hStick-h;
     int32_t dist = dh;
-    if (minRange <= d && d <= maxRange) {
-        dhxAvg = (dhx[1]+dhx[3])/2;
-        switch (px->heading) {
-        case HEADING_LFT:
-            dhx[0] = STEP_TC*dh + (1-STEP_TC)*dhx[0];
-            break;
-        case HEADING_CTR_LFT:
-            dhx[1] = STEP_TC*dh + (1-STEP_TC)*dhx[1];
-            break;
-        case HEADING_STEADY:
-            dhx[2] = STEP_TC*dh + (1-STEP_TC)*dhx[2];
-            break;
-        case HEADING_CTR_RHT:
-            dhx[3] = STEP_TC*dh + (1-STEP_TC)*dhx[3];
-            break;
-        case HEADING_RHT:
-            dhx[4] = STEP_TC*dh + (1-STEP_TC)*dhx[4];
-            break;
-        }
-    }
     if (dist < STEP_DOWN) {
         brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
         lraThread.setEffect(DRV2605_SHARP_TICK_1); 
@@ -195,6 +171,29 @@ void RangeThread::sweepStep(uint16_t d){
         // do nothing
     }
     ledThread.brightness = brightness;
+    if (curLed.r != ledThread.leds[0].r ||
+        curLed.g != ledThread.leds[0].g ||
+        curLed.b != ledThread.leds[0].b) 
+    {
+        ledThread.leds[0] = curLed;
+        ledThread.show(SHOWLED_FADE85);
+    }
+}
+
+void RangeThread::sweepStep(uint16_t d){
+    CRGB curLed = ledThread.leds[0];
+    uint8_t blue = 0x33;
+    bool distInc = eaDistFast > eaDistSlow;
+    ledThread.brightness = 0xff;
+
+    if (d > hStick || distInc) { 
+        curLed = CRGB(0,0,blue);
+        return; 
+    }
+
+    lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+    curLed = CRGB(0xff,0,blue);
+
     if (curLed.r != ledThread.leds[0].r ||
         curLed.g != ledThread.leds[0].g ||
         curLed.b != ledThread.leds[0].b) 
@@ -295,7 +294,7 @@ void RangeThread::loop() {
         om::print(" eaDistErr:");
         om::print(eaDistErr);
         om::print(" dh");
-        om::print((int16_t)(h-hFloor));
+        om::print((int16_t)(h-hStick));
         om::print(" pitch:");
         om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {

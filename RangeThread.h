@@ -38,13 +38,11 @@ protected:
     int32_t eaDistSlow = 0;
     int32_t eaDistSleep = 2000L;
     int32_t eaDistErr = 0; 
-    int16_t dhx[HEADING_COUNT];
-    int16_t dhxAvg = 0;
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;
     uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
-    int32_t hFloor = 0;
+    int32_t hStick = 0;
     int32_t hCal = 0;
     int32_t h = 0;
     int32_t pitch;
@@ -55,6 +53,7 @@ protected:
 
     void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
+    void sweepStepDeprecated(uint16_t dist);
     void calFloor(uint16_t dist);
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();

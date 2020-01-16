@@ -47,6 +47,9 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
 
 void RangeThread::notify(NotifyType value) {
     uint16_t mod16 = loops % 16;
+    uint16_t mod32 = loops % 32;
+    uint16_t mod64 = loops % 64;
+    
     switch (value) {
     case NOTIFY_INRANGE:
         if (loops % STEP_LOOPS == phase) {
@@ -62,17 +65,16 @@ void RangeThread::notify(NotifyType value) {
         }
         break;
     case NOTIFY_OK:
-        if (mod16 == 0) {
-            lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
+        if (mod64 == 0) {
+            lraThread.setEffect(DRV2605_STRONG_CLICK_4); 
         }
         break;
     default:
     case NOTIFY_ERROR: // SOSOSOSOS...
-        if (mod16 == 0) {
-            lraThread.setEffect(DRV2605_TRIPLE_CLICK); 
-        }
-        if (mod16 == 5 || mod16==8 || mod16==11) {
-            lraThread.setEffect(DRV2605_TRANSITION_RAMP_UP_SHORT_SHARP_1_100); 
+        if (mod64==0 || mod64==4 || mod64==8) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+        } else if (mod64==22 || mod64==34 || mod64==46) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_1); 
         }
         break;
     }
@@ -154,7 +156,7 @@ void RangeThread::sweepStep(uint16_t d){
 
 void RangeThread::selftest(uint16_t d){
     CRGB curLed = ledThread.leds[0];
-    bool okRange = d == 65536 ? false : true;
+    bool okRange = d == 65535 ? false : true;
     bool okTbd = true;
     bool okAccel = -90 < pitch && pitch < 90;
 
@@ -171,7 +173,6 @@ void RangeThread::selftest(uint16_t d){
 
     if (curLed != ledThread.leds[0]) {
         ledThread.brightness = 0xff;
-        om::print("setting curled");
         ledThread.leds[0] = curLed;
         ledThread.show(SHOWLED_FADE85);
     }
@@ -184,12 +185,10 @@ void RangeThread::setMode(ModeType mode, bool force) {
 
     switch (mode) {
     case MODE_SELFTEST:
-        om::println("Selftest...");
         distanceSensor.startContinuous(msLoop); // 19mA
         msSelftest = om::millis() + MS_SELFTEST;
         break;
     case MODE_SLEEP:
-        om::println("Idling...");
         // stopContinuous() can't be restarted?
         // so just slow down ranging
         distanceSensor.startContinuous(msLoop*100L); 
@@ -203,10 +202,8 @@ void RangeThread::setMode(ModeType mode, bool force) {
     case MODE_SWEEP:
         if (this->mode == MODE_SLEEP) {
             msIdle = om::millis();
-            om::println("Activating...");
             monitor.quiet(false);
             distanceSensor.startContinuous(msLoop); // 19mA
-            om::println("Ranging...");
         }
         break;
     }
@@ -227,6 +224,13 @@ void RangeThread::updateOledPosition() {
 #define PITCH_CAL -82
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
+
+char * modeStr[] = {
+  "SLEEP ",
+  "SLFTST",
+  "SWEEP ",
+  "CALIB ",
+};
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -263,13 +267,10 @@ void RangeThread::loop() {
         setMode(MODE_SWEEP);
     }
 
-    if (loops % 10 == 0) {
-        om::print(" mode");
-        om::print((int8_t) mode);
+    if (loops % 16 == 0) {
+        om::print(modeStr[(int8_t) mode]);
         om::print(" d");
         om::print(d);
-        om::print(" eaDistErr:");
-        om::print(eaDistErr);
         om::print(" pitch:");
         om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {

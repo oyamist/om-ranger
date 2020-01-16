@@ -15,11 +15,17 @@ typedef enum RangeType {
   RNG_FAR = 5,       // Slow flash green
 } RangeType;
 
+typedef enum NotifyType {
+    NOTIFY_BUSY = 1,    // Action in progress
+    NOTIFY_OK = 2,      // Action completed successfully
+    NOTIFY_ERROR = 3,   // Action failed
+} NotifyType;
+
 typedef enum ModeType {
-    MODE_SLEEP = 0,   // Inactive
-    MODE_SWEEP_FORWARD = 1, // Left-right sweep
-    MODE_SWEEP_STEP = 2,    // Floor sweep
-    MODE_CAL_FLOOR = 3,     // Calibrate floor height
+    MODE_SLEEP = 0,     // Inactive
+    MODE_SELFTEST = 1,  // Triggered by startup
+    MODE_SWEEP = 2,     // Sweep for objects in range
+    MODE_CALIBRATE = 3, // Calibrate floor height
 } ModeType;
 
 typedef class RangeThread : om::Thread {
@@ -40,6 +46,7 @@ protected:
     int32_t eaDistErr = 0; 
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;
+    uint32_t msSelftest = 0;
     uint32_t msUnsteady = 0;
     int32_t stepFloor = 0;
     int32_t hStick = 0;
@@ -52,13 +59,12 @@ protected:
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
 
-    void sweepForward(uint16_t dist);
     void sweepStep(uint16_t dist);
-    void sweepStepDeprecated(uint16_t dist);
+    void selftest(uint16_t d);
     void calFloor(uint16_t dist);
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
-    void lraCalibrating(bool done=false);
+    void notify(NotifyType value);
 } RangeThread;
 
 extern RangeThread rangeThread;

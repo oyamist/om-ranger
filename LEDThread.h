@@ -33,6 +33,16 @@ protected:
     int16_t effect = SHOWLED_FADE50;
 } LEDThread;
 
+
+inline bool operator == (CRGB &c1, CRGB &c2) {
+    return c1.r == c2.r && c1.g == c2.g && c1.b == c2.b;
+}
+
+inline bool operator != (CRGB &c1, CRGB &c2) {
+    return c1.r != c2.r || c1.g != c2.g || c1.b != c2.b;
+}
+
+
 extern LEDThread ledThread;
 
 #endif

@@ -16,9 +16,11 @@ typedef enum RangeType {
 } RangeType;
 
 typedef enum NotifyType {
-    NOTIFY_BUSY = 1,    // Action in progress
-    NOTIFY_OK = 2,      // Action completed successfully
-    NOTIFY_ERROR = 3,   // Action failed
+    NOTIFY_BUSY = 1,      // Action in progress
+    NOTIFY_OK = 2,        // Action completed successfully
+    NOTIFY_ERROR = 3,     // Action failed
+    NOTIFY_CLOSEST = 4,   // Contact imminent
+    NOTIFY_INRANGE = 5,   // Within range
 } NotifyType;
 
 typedef enum ModeType {

@@ -26,6 +26,13 @@ VL53L0X distanceSensor;
 #define STEP_TC 0.5
 #define STEP_LOOPS 5
 
+char * modeStr[] = {
+  "SLEEP ",
+  "SLFTST",
+  "SWEEP ",
+  "CALIB ",
+};
+
 RangeThread::RangeThread() {}
 
 void RangeThread::setup(uint8_t port, uint16_t msLoop) {
@@ -48,6 +55,7 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
 void RangeThread::notify(NotifyType value) {
     uint16_t mod16 = loops % 16;
     uint16_t mod32 = loops % 32;
+    uint16_t mod48 = loops % 48;
     uint16_t mod64 = loops % 64;
     
     switch (value) {
@@ -65,8 +73,8 @@ void RangeThread::notify(NotifyType value) {
         }
         break;
     case NOTIFY_OK:
-        if (mod64 == 0) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_4); 
+        if (mod48 == 0) {
+            lraThread.setEffect(DRV2605_SOFT_FUZZ_60); 
         }
         break;
     default:
@@ -221,16 +229,9 @@ void RangeThread::updateOledPosition() {
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 2000
 #define PITCH_SELFTEST 80
-#define PITCH_CAL -82
+#define PITCH_CAL -70
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
-
-char * modeStr[] = {
-  "SLEEP ",
-  "SLFTST",
-  "SWEEP ",
-  "CALIB ",
-};
 
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
@@ -260,8 +261,8 @@ void RangeThread::loop() {
     if (eaDistSleep < SLEEP_DIST || flatStill) {
         setMode(MODE_SLEEP);
     } else if (pitch >= PITCH_SELFTEST || om::millis() < msSelftest ) {
-        setMode(MODE_SELFTEST);
-    } else if (pitch <= PITCH_CAL) {
+        setMode(MODE_SELFTEST, pitch >= PITCH_SELFTEST);
+    } else if (mode == MODE_SELFTEST && pitch <= PITCH_CAL) {
         setMode(MODE_CALIBRATE, eaDistErr > STEADY_DIST);        
     } else {
         setMode(MODE_SWEEP);

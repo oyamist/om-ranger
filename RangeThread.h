@@ -62,12 +62,12 @@ protected:
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;
 
-    void sweepStep(uint16_t dist);
+    void sweep(uint16_t dist);
     void selftest(uint16_t d);
-    void calFloor(uint16_t dist);
+    void calibrateLength(uint16_t dist);
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
-    void notify(NotifyType value);
+    void notify(NotifyType value, CRGB &curLed, uint8_t brightness);
 } RangeThread;
 
 extern RangeThread rangeThread;

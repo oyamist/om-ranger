@@ -268,14 +268,19 @@ void RangeThread::loop() {
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
     h = (eaDistSlow+PIVOT_DIST) * sin(-pitch * PI / 180.0);
     bool flatStill = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
-
+    bool testing = om::millis() <= msSelftest;
     // Chose mode of operation
     if (eaDistSleep < SLEEP_DIST || flatStill) {
         setMode(MODE_SLEEP);
-    } else if (pitch >= PITCH_SELFTEST || om::millis() < msSelftest ) {
+    } else if (pitch >= PITCH_SELFTEST || testing ) {
         setMode(MODE_SELFTEST, pitch >= PITCH_SELFTEST);
-    } else if (mode == MODE_SELFTEST && pitch <= PITCH_CAL) {
-        setMode(MODE_CALIBRATE, eaDistErr > STEADY_DIST);        
+    } else if (pitch <= PITCH_CAL && mode != MODE_SWEEP) {
+        if (testing) {
+           setMode(MODE_CALIBRATE, true);
+           msSelftest = 0;
+        } else {
+           setMode(MODE_CALIBRATE, eaDistErr > STEADY_DIST);        
+        }
     } else {
         setMode(MODE_SWEEP);
     }
@@ -284,6 +289,8 @@ void RangeThread::loop() {
         om::print(modeStr[(int8_t) mode]);
         om::print(" d");
         om::print(d);
+        om::print(" testing");
+        om::print(testing ? "Y" : "-");
         om::print(" pitch:");
         om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {

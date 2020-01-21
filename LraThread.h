@@ -2,6 +2,7 @@
 #define LRA_THREAD_H
 
 #include "src/omilli/Thread.h"
+#include "om-ranger.h"
 
 #define DRV2605_STRONG_CLICK_100 1
 #define DRV2605_STRONG_CLICK_60 2

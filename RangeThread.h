@@ -2,6 +2,7 @@
 #define RANGE_THREAD_H
 
 #include "src/omilli/Thread.h"
+#include "om-ranger.h"
 #include "Accel3Thread.h"
 
 #define VL53L0X_PERIOD 33

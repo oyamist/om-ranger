@@ -2,6 +2,7 @@
 #define OLED042_THREAD_H
 
 #include "src/omilli/OMilli.h"
+#include "om-ranger.h"
 
 /* The OLED 0.42" screen is 72 by 40 pixels, with (0,0) at top left. 
  * With a 5x7 font, each character takes up 6x8 pixels, so we can

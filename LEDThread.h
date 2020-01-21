@@ -3,6 +3,7 @@
 
 #include "src/omilli/OMilli.h"
 #include "src/fastled/FastLED.h"
+#include "om-ranger.h"
 
 #define LED_FRAMERATE_PLA 40 /* 25 fps */
 #define SHOWLED_FADE0 0  /* 0% brightness after first period */

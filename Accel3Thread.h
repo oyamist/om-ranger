@@ -2,6 +2,7 @@
 #define ACCEL3_THREAD_H
 
 #include "src/omilli/Thread.h"
+#include "om-ranger.h"
 
 /* Heading resolution is quite coarse, which provides robust
  * resistance to noise from many sources.

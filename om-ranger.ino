@@ -1,6 +1,7 @@
  #include <Arduino.h>
 #include <Wire.h>         // For I2C communication with sensor
 #include <Wireling.h>               // For interfacing with Wirelings
+#include "om-ranger.h"
 #include "Accel3Thread.h"
 #include "LraThread.h"
 #include "RangeThread.h"
@@ -28,11 +29,11 @@ void setup() { // run once, when the sketch starts
     // Initialize
     accelThread.setup();
     lraThread.setup(1);
-    rangeThread.setup(0,33);
+    rangeThread.setup(2,33);
     if (DISPLAY_OLED) { // Mutually exclusive I2CPORT_DISPLAY
-        oledThread.setup(2, OLED_FRAMERATE);
+        oledThread.setup(0, OLED_FRAMERATE);
     } else {
-        ledThread.setup(2, LED_FRAMERATE_PLA);
+        ledThread.setup(0, LED_FRAMERATE_PLA);
     }
     om::println("threadRunner.setup");
 

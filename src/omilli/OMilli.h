@@ -40,11 +40,6 @@
 #define EATC_5 0.12 /* 5/55 periods */
 #define EATC_6 0.10 /* 6/66 periods */
 
-// Argument to setI2CPort() for accessing peripherals
-#define I2CPORT_DISPLAY 0
-#define I2CPORT_LRA 1
-#define I2CPORT_TOF 2
-
 #if defined(MOCK_ARDUINO)
 #define NO_MCU
 #include "MockDuino.h"

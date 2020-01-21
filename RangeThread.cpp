@@ -59,7 +59,7 @@ void RangeThread::notify(
     uint16_t mod48 = loops % 48;
     uint16_t mod64 = loops % 64;
     bool updateDisplay = curLed != ledThread.leds[0] || 
-        brightness != ledThread->brightness;
+        brightness != ledThread.brightness;
     
     switch (value) {
     case NOTIFY_INRANGE:
@@ -185,7 +185,7 @@ void RangeThread::selftest(uint16_t d){
     uint8_t brightness = 0xff;
 
 
-    if (okRange && okTbd && okAccel) {
+    if (okRange && okAccel) {
         curLed = CRGB(0, 0xff, 0);
         notify(NOTIFY_OK, curLed, brightness);
     } else {

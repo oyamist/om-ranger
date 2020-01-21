@@ -4,6 +4,7 @@
 #include "src/omilli/Thread.h"
 #include "om-ranger.h"
 #include "Accel3Thread.h"
+#include "src/fastled/FastLED.h"
 
 #define VL53L0X_PERIOD 33
 

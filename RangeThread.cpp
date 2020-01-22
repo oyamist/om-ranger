@@ -206,7 +206,7 @@ void RangeThread::setMode(ModeType mode, bool force) {
 
     uint32_t msNow = om::millis();
 
-    msNotify = loops;
+    loopsNotify = loops;
 
     switch (mode) {
     case MODE_SELFTEST:

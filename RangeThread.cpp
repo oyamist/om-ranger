@@ -275,7 +275,7 @@ void RangeThread::loop() {
     if (eaDistSleep < SLEEP_DIST || flatStill) {
         setMode(MODE_SLEEP);
     } else if (pitch >= PITCH_SELFTEST || testing ) {
-        setMode(MODE_SELFTEST, pitch >= PITCH_SELFTEST);
+        setMode(MODE_SELFTEST, !testing);
     } else if (pitch <= PITCH_CAL && mode != MODE_SWEEP) {
         if (testing) {
            setMode(MODE_CALIBRATE, true);

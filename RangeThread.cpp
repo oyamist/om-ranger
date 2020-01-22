@@ -35,6 +35,7 @@ char * modeStr[] = {
 
 RangeThread::RangeThread() {}
 
+
 void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     delay(200);              // Sensor Startup time
     id = 'R';
@@ -48,6 +49,10 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setTimeout(500);
     distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
     distanceSensor.startContinuous(msLoop); // 19mA
+
+    
+analogReadResolution(12); // BATTERY
+analogReference(AR_INTERNAL1V0); // BATTERY
 
     setMode(MODE_SELFTEST);
 }
@@ -283,11 +288,13 @@ void RangeThread::loop() {
     }
 
     if (loops % 16 == 0) {
+        float canvalue=analogRead(ADC_BATTERY);
+        float Vf=(canvalue/4095.0)*(1/1.032)*(1.0/(33.0/(68.0+33.0)));
         om::print(modeStr[(int8_t) mode]);
         om::print(" d");
         om::print(d);
-        om::print(" testing");
-        om::print(testing ? "Y" : "-");
+        om::print(" Vf");
+        om::print(Vf);
         om::print(" pitch:");
         om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {

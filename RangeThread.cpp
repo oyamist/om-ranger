@@ -54,10 +54,11 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
 
 void RangeThread::notify(
     NotifyType value, CRGB &curLed, uint8_t brightness) {
-    uint16_t mod16 = loops % 16;
-    uint16_t mod32 = loops % 32;
-    uint16_t mod48 = loops % 48;
-    uint16_t mod64 = loops % 64;
+    uint16_t diffLoops = loops - loopsNotify;
+    uint16_t mod16 = diffLoops % 16;
+    uint16_t mod32 = diffLoops % 32;
+    uint16_t mod48 = diffLoops % 48;
+    uint16_t mod64 = diffLoops % 64;
     bool updateDisplay = curLed != ledThread.leds[0] || 
         brightness != ledThread.brightness;
     
@@ -203,10 +204,14 @@ void RangeThread::setMode(ModeType mode, bool force) {
         return;
     }
 
+    uint32_t msNow = om::millis();
+
+    msNotify = loops;
+
     switch (mode) {
     case MODE_SELFTEST:
         distanceSensor.startContinuous(msLoop); // 19mA
-        msSelftest = om::millis() + MS_SELFTEST;
+        msSelftest = msNow + MS_SELFTEST;
         break;
     case MODE_SLEEP:
         // stopContinuous() can't be restarted?
@@ -217,11 +222,11 @@ void RangeThread::setMode(ModeType mode, bool force) {
         ledThread.show(SHOWLED_FADE50);
         break;
     case MODE_CALIBRATE: 
-        msCalFloor = om::millis() + 8*CAL_FLOOR_DT;
+        msCalFloor = msNow + 8*CAL_FLOOR_DT;
         break;
     case MODE_SWEEP:
         if (this->mode == MODE_SLEEP) {
-            msIdle = om::millis();
+            msIdle = msNow;
             monitor.quiet(false);
             distanceSensor.startContinuous(msLoop); // 19mA
         }

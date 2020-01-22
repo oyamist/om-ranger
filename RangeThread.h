@@ -52,6 +52,7 @@ protected:
     int32_t msCalFloor = 0;
     uint32_t msSelftest = 0;
     uint32_t msUnsteady = 0;
+    uint32_t loopsNotify = 0;
     int32_t stepFloor = 0;
     int32_t hStick = 0;
     int32_t hCal = 0;

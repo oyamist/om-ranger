@@ -19,12 +19,12 @@ VL53L0X distanceSensor;
 
 #define SLOWFLASH 10
 #define FASTFLASH 5
-#define STEP_DOWN -50
-#define STEP_UP 50
 #define STEP_CAL_LOOPS 60
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
 #define STEP_LOOPS 5
+#define MS_SELFTEST 2000 /* Selftest duration */
+
 
 char * modeStr[] = {
   "SLEEP ",
@@ -56,7 +56,6 @@ void RangeThread::notify(
     NotifyType value, CRGB &curLed, uint8_t brightness) {
     uint16_t diffLoops = loops - loopsNotify;
     uint16_t mod16 = diffLoops % 16;
-    uint16_t mod32 = diffLoops % 32;
     uint16_t mod48 = diffLoops % 48;
     uint16_t mod64 = diffLoops % 64;
     bool updateDisplay = curLed != ledThread.leds[0] || 
@@ -114,38 +113,33 @@ void RangeThread::calibrateLength(uint16_t d){
     uint8_t brightness = 0xff;
     hCal = expAvg(h, hCal, EATC_2);
     if (msRemaining < 0) {
+        curLed = CRGB(0x44, 0x44, 0xff);
         notify(NOTIFY_OK, curLed, brightness);
         hStick = hCal;
-        curLed = CRGB(0x44, 0x44, 0xff);
     } else if (msRemaining < CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0xff);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 2*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0xee);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 3*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0xcc);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 4*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0xaa);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 5*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0x88);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 6*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0x44);
+        notify(NOTIFY_BUSY, curLed, brightness);
     } else if (msRemaining < 7*CAL_FLOOR_DT) {
-        notify(NOTIFY_BUSY, curLed, brightness);
         curLed = CRGB(0x0, 0x0, 0x22);
-    } else {
         notify(NOTIFY_BUSY, curLed, brightness);
+    } else {
         curLed = CRGB(0x0, 0x0, 0x11);
-    }
-    ledThread.brightness = brightness;
-    if (curLed != ledThread.leds[0]) {
-        ledThread.leds[0] = curLed;
-        ledThread.show(SHOWLED_FADE85);
+        notify(NOTIFY_BUSY, curLed, brightness);
     }
 }
 
@@ -176,8 +170,6 @@ void RangeThread::sweep(uint16_t d){
         ledThread.show(SHOWLED_FADE85);
     }
 }
-
-#define MS_SELFTEST 3000 /* Selftest duration */
 
 void RangeThread::selftest(uint16_t d){
     CRGB curLed = ledThread.leds[0];

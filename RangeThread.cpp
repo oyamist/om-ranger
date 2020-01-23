@@ -270,7 +270,9 @@ void RangeThread::loop() {
         setMode(MODE_SLEEP);
     } else if (pitch >= PITCH_SELFTEST || testing ) {
         setMode(MODE_SELFTEST, !testing);
-        msSelftest = om::millis() + MS_SELFTEST;
+        if (pitch >= PITCH_SELFTEST) {
+            msSelftest = om::millis() + MS_SELFTEST;
+        }
     } else if (pitch <= PITCH_CAL && mode != MODE_SWEEP) {
         if (testing) {
            setMode(MODE_CALIBRATE, true);

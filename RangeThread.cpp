@@ -23,8 +23,13 @@ VL53L0X distanceSensor;
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
 #define STEP_LOOPS 5
-#define MS_SELFTEST 2000 /* Selftest duration */
-
+#define MS_SELFTEST 1000 /* Time to establish calibration*/
+#define DEG_HORIZONTAL 10
+#define STEADY_IDLE_MS 2000
+#define PITCH_SELFTEST 80
+#define PITCH_CAL -70
+#define STEADY_DIST 35
+#define SLEEP_DIST 50
 
 char * modeStr[] = {
   "SLEEP ",
@@ -236,13 +241,6 @@ void RangeThread::updateOledPosition() {
     pz->headingToString(oledThread.lines[4]);
 }
 
-#define DEG_HORIZONTAL 10
-#define STEADY_IDLE_MS 2000
-#define PITCH_SELFTEST 80
-#define PITCH_CAL -70
-#define STEADY_DIST 35
-#define SLEEP_DIST 50
-
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
@@ -272,6 +270,7 @@ void RangeThread::loop() {
         setMode(MODE_SLEEP);
     } else if (pitch >= PITCH_SELFTEST || testing ) {
         setMode(MODE_SELFTEST, !testing);
+        msSelftest = om::millis() + MS_SELFTEST;
     } else if (pitch <= PITCH_CAL && mode != MODE_SWEEP) {
         if (testing) {
            setMode(MODE_CALIBRATE, true);
@@ -287,8 +286,6 @@ void RangeThread::loop() {
         om::print(modeStr[(int8_t) mode]);
         om::print(" d");
         om::print(d);
-        om::print(" Vf");
-        om::print(Vf);
         om::print(" pitch:");
         om::print(pitch);
         for (int ix = 0; ix < HEADING_COUNT; ix++) {

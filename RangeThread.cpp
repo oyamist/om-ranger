@@ -118,7 +118,7 @@ void RangeThread::notify(
         ledThread.leds[0] = curLed;
         ledThread.show(SHOWLED_FADE85);
     }
-    lastNotify = notify;
+    lastNotify = value;
 }
 
 #define CAL_FLOOR_DT 400L
@@ -276,17 +276,17 @@ void RangeThread::loop() {
     } 
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
     bool flatStill = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
-    bool modeLock = om::millis <= msModeLock;
+    bool modeLock = om::millis() <= msModeLock;
     bool testing = mode == MODE_SELFTEST && modeLock;
     bool startTesting = pitch >= PITCH_SELFTEST;
-    bool calibrating = mode == MODE_CALIBRATING && modeLock;
+    bool calibrating = mode == MODE_CALIBRATE && modeLock;
     bool startCalibrating = mode == MODE_SELFTEST && pitch <= PITCH_CAL;
     bool sleeping = mode == MODE_SLEEP && modeLock;
-    bool startSleep = eaDistSleep < SLEEP_DIST || flatStill;
+    bool startSleep = eaDistSleep < SLEEP_DIST && flatStill;
     // Chose mode of operation
     if (startSleep || sleeping) {
         setMode(MODE_SLEEP, !sleeping);
-        if (startSleeping) {
+        if (startSleep) {
             msModeLock = om::millis() + MS_MODELOCK;
         }
     } else if (startTesting || testing ) {
@@ -331,7 +331,8 @@ void RangeThread::loop() {
     } else if (mode == MODE_CALIBRATE) {
         calibrateLength(dist);
     } else if (mode == MODE_SLEEP) {
-        notify(sleep, CRGB(0xff,0xff,0xff), 0xff);
+        CRGB led = CRGB(0xff,0xff,0xff);
+        notify(NOTIFY_SLEEP, led,(uint8_t) 0xff);
     } else {
         om::print("UNKNOWN MODE");
         om::print((uint8_t) mode);

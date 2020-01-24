@@ -54,7 +54,7 @@ protected:
     uint32_t msModeLock = 0;
     uint32_t msUnsteady = 0;
     uint32_t loopsNotify = 0;
-    int32_t distStick = 0;
+    int32_t distStick = 600;
     int32_t distCal = 0;
     int32_t pitch;
     int32_t phase = 0;

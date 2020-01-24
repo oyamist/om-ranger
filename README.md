@@ -1,5 +1,5 @@
 # SightSabre - An Infrared Haptic Ranging Support Wand 
-### Range happily with a touch-free light sabre
+### Range haptically with a no-touch infrared light sabre
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.

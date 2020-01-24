@@ -1,15 +1,15 @@
-# Hap-eRanger - Haptic Electronic Ranger (Infrared TOF)
-### Range happily with touch-free visual assistance
+# SightSabre - An Infrared Haptic Ranging Support Wand 
+### Range happily with a touch-free light sabre
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
 awkward for both the blind and the sighted.
 
-The Hap-eRanger uses an infrared TOF (Time-of-flight) laser 
+The SightSabre uses an infrared TOF (Time-of-flight) laser 
 to detect near objects.
 Tactile feedback on the range of detected objects is provided by
 a Linear Resonant Actuator (LRA) haptic device.
 
-The Hap-eRanger uses [TinyCircuits](https://tinycircuits.com) hardware
+The SightSabre uses [TinyCircuits](https://tinycircuits.com) hardware
 and is implemented with the [[OMilli]] multi-threaded operating system
 for microcontrollers.
 

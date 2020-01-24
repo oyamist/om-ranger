@@ -6,7 +6,7 @@
 #include "Accel3Thread.h"
 #include "src/fastled/FastLED.h"
 
-#define VL53L0X_PERIOD 33
+#define VL53L0X_PERIOD 33 /* Maximum range */
 
 typedef enum RangeType {
   RNG_UNKNOWN = 0,   // Center flash white
@@ -36,7 +36,7 @@ typedef enum ModeType {
 typedef class RangeThread : om::Thread {
 public:
     RangeThread();
-    void setup(uint8_t port=2, uint16_t msLoop=VL53L0X_PERIOD);
+    void setup(uint8_t port=2, uint16_t msLoop=1+VL53L0X_PERIOD);
     
 protected:
     uint8_t port;

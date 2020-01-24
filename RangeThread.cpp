@@ -30,6 +30,7 @@ VL53L0X distanceSensor;
 #define PITCH_CAL -70
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
+#define MS_INTERMEASUREMENT 1
 
 char * modeStr[] = {
   "SLEEP ",
@@ -39,6 +40,8 @@ char * modeStr[] = {
 };
 
 RangeThread::RangeThread() {}
+
+
 
 
 void RangeThread::setup(uint8_t port, uint16_t msLoop) {
@@ -52,8 +55,9 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     om::setI2CPort(port); 
     distanceSensor.init();
     distanceSensor.setTimeout(500);
-    distanceSensor.setMeasurementTimingBudget((msLoop-1)*1000);
-    distanceSensor.startContinuous(msLoop); // 19mA
+    uint32_t msTimingBudget = msLoop-MS_INTERMEASUREMENT;
+    distanceSensor.setMeasurementTimingBudget(msTimingBudget*1000);
+    distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
 
     setMode(MODE_SELFTEST);
 }
@@ -219,7 +223,6 @@ void RangeThread::setMode(ModeType mode, bool force) {
 
     switch (mode) {
     case MODE_SELFTEST:
-        distanceSensor.startContinuous(msLoop); // 19mA
         msModeLock = msNow + MS_MODELOCK;
         break;
     case MODE_SLEEP:
@@ -239,7 +242,7 @@ void RangeThread::setMode(ModeType mode, bool force) {
         if (this->mode == MODE_SLEEP) {
             msIdle = msNow;
             monitor.quiet(false);
-            distanceSensor.startContinuous(msLoop); // 19mA
+            distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
         }
         break;
     }
@@ -269,7 +272,6 @@ void RangeThread::loop() {
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     float err = abs(d - eaDistSlow);
     eaDistErr = expAvg(err, eaDistErr, EATC_6);
-    uint16_t dist = d;
     if (minRange <= d && d <= maxRange) {
         eaDistFast = expAvg(d, eaDistFast, EATC_0);
         eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
@@ -324,12 +326,12 @@ void RangeThread::loop() {
     }
 
     if (mode == MODE_SELFTEST) {
-        selftest(dist);
+        selftest(d);
     } else if (mode == MODE_SWEEP) {
-        sweep(dist);
+        sweep(d);
         updateOledPosition();
     } else if (mode == MODE_CALIBRATE) {
-        calibrateLength(dist);
+        calibrateLength(d);
     } else if (mode == MODE_SLEEP) {
         CRGB led = CRGB(0xff,0xff,0xff);
         notify(NOTIFY_SLEEP, led,(uint8_t) 0xff);

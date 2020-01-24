@@ -18,6 +18,7 @@ typedef enum RangeType {
 } RangeType;
 
 typedef enum NotifyType {
+    NOTIFY_SLEEP = 0,     // Sleeping
     NOTIFY_BUSY = 1,      // Action in progress
     NOTIFY_OK = 2,        // Action completed successfully
     NOTIFY_ERROR = 3,     // Action failed
@@ -50,16 +51,15 @@ protected:
     int32_t eaDistErr = 0; 
     uint32_t msIdle = 0;
     int32_t msCalFloor = 0;
-    uint32_t msSelftest = 0;
+    uint32_t msModeLock = 0;
     uint32_t msUnsteady = 0;
     uint32_t loopsNotify = 0;
-    int32_t stepFloor = 0;
-    int32_t hStick = 0;
-    int32_t hCal = 0;
-    int32_t h = 0;
+    int32_t distStick = 0;
+    int32_t distCal = 0;
     int32_t pitch;
     int32_t phase = 0;
     ModeType mode;
+    NotifyType lastNotify = NOTIFY_SLEEP;
     AxisState * px = &accelThread.xState;
     AxisState * py = &accelThread.yState;
     AxisState * pz = &accelThread.zState;

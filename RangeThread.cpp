@@ -90,7 +90,7 @@ void RangeThread::notify(NotifyType value) {
     
     switch (value) {
     case NOTIFY_SWEEP:
-        if (ms16 % 0 == 0) {
+        if (mod16 % 0 == 0) {
             lraThread.setEffect(0); 
             led = CRGB(0,0,0xff);
             brightness = 0xff;
@@ -105,14 +105,14 @@ void RangeThread::notify(NotifyType value) {
         break;
     case NOTIFY_INCOMING:
         if (mod16 == 0) {
-            lraThread.setEffect(DRV2605_PULSING_SHARP_1); 
+            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
             led = CRGB(0xff,0,0);
             brightness = 0xff;
         }
         break;
     case NOTIFY_TOUCHING:
-        if (mod16 == 0) {
-            lraThread.setEffect(DRV2605_TRANSITION_HUM_6); 
+        if (mod48 == 0) {
+            lraThread.setEffect(DRV2605_TRANSITION_RAMP_UP_LONG_SMOOTH_1); 
             led = CRGB(0xff,0xff,0);
             brightness = 0xff;
         }
@@ -132,7 +132,8 @@ void RangeThread::notify(NotifyType value) {
         }
         break;
     default:
-    case NOTIFY_ERROR: // SOSOSOSOS...
+    case NOTIFY_EACCEL: // SOSOSOSOS...
+    case NOTIFY_ERANGE: // SOSOSOSOS...
         showLed = SHOWLED_FADE50;
         if (mod64==0 || mod64==4 || mod64==8) {
             lraThread.setEffect(DRV2605_SHARP_TICK_1); 

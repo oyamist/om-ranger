@@ -31,6 +31,9 @@ VL53L0X distanceSensor;
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
 #define MS_INTERMEASUREMENT 1
+#define CAL_FLOOR_DT 400L
+#define PIVOT_DIST 300
+
 
 char * modeStr[] = {
   "SLEEP ",
@@ -39,10 +42,18 @@ char * modeStr[] = {
   "CALIB ",
 };
 
+char * notifyStr[] = {
+    "SLEEPING",
+    "BUSY    ",
+    "OK      ",
+    "TOUCHING",
+    "INCOMING",
+    "SWEEPING",
+    "ERANGE  ",
+    "EACCEL  ",
+};
+
 RangeThread::RangeThread() {}
-
-
-
 
 void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     delay(200);              // Sensor Startup time
@@ -62,153 +73,123 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     setMode(MODE_SELFTEST);
 }
 
-void RangeThread::notify(
-    NotifyType value, CRGB &curLed, uint8_t brightness) {
+void RangeThread::notify(NotifyType value) {
     if (lastNotify != value) {
         loopsNotify = loops;
+        om::print("notify: ");
+        om::print(notifyStr[(uint8_t)value]);
+        om::println();
     }
     uint16_t diffLoops = loops - loopsNotify;
     uint16_t mod16 = diffLoops % 16;
     uint16_t mod48 = diffLoops % 48;
     uint16_t mod64 = diffLoops % 64;
-    bool updateDisplay = curLed != ledThread.leds[0] || 
-        brightness != ledThread.brightness;
+    int16_t showLed = SHOWLED_FADE85;
+    CRGB led = ledThread.leds[0];
+    uint8_t brightness = ledThread.brightness;
     
     switch (value) {
+    case NOTIFY_SWEEP:
+        if (ms16 % 0 == 0) {
+            lraThread.setEffect(0); 
+            led = CRGB(0,0,0xff);
+            brightness = 0xff;
+        }
+        break;
     case NOTIFY_SLEEP:
         if (loopsNotify == loops) {
             lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
-        } else {
-            updateDisplay = false;
+            led = CRGB(0xff,0xff,0xff);
+            brightness = 0xff;
         }
         break;
-    case NOTIFY_INRANGE:
-        if (loops % STEP_LOOPS == phase) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
-        } else {
-            updateDisplay = false;
+    case NOTIFY_INCOMING:
+        if (mod16 == 0) {
+            lraThread.setEffect(DRV2605_PULSING_SHARP_1); 
+            led = CRGB(0xff,0,0);
+            brightness = 0xff;
         }
         break;
-    case NOTIFY_CLOSEST:
-        lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+    case NOTIFY_TOUCHING:
+        if (mod16 == 0) {
+            lraThread.setEffect(DRV2605_TRANSITION_HUM_6); 
+            led = CRGB(0xff,0xff,0);
+            brightness = 0xff;
+        }
         break;
     case NOTIFY_BUSY:
         if (mod16 == 0) {
             lraThread.setEffect(DRV2605_SHARP_TICK_3); 
-        } else {
-            updateDisplay = false;
+            led = CRGB(0xff,0,0xff);
+            brightness = 0xff;
         }
         break;
     case NOTIFY_OK:
         if (mod48 == 0) {
             lraThread.setEffect(DRV2605_SOFT_FUZZ_60); 
-        } else {
-            updateDisplay = false;
+            led = CRGB(0,0xff,0);
+            brightness = 0xff;
         }
         break;
     default:
     case NOTIFY_ERROR: // SOSOSOSOS...
+        showLed = SHOWLED_FADE50;
         if (mod64==0 || mod64==4 || mod64==8) {
             lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+            led = CRGB(0xff,0,0);
+            brightness = 0xff;
         } else if (mod64==22 || mod64==34 || mod64==46) {
             lraThread.setEffect(DRV2605_SHARP_TICK_1); 
-        } else {
-            updateDisplay = false;
+            led = CRGB(0xff,0,0);
+            brightness = 0xff;
         }
         break;
     }
+
+    bool updateDisplay = led != ledThread.leds[0] || 
+        brightness != ledThread.brightness;
     if (updateDisplay) {
         ledThread.brightness = brightness;
-        ledThread.leds[0] = curLed;
-        ledThread.show(SHOWLED_FADE85);
+        ledThread.leds[0] = led;
+        ledThread.show(showLed);
     }
     lastNotify = value;
 }
 
-#define CAL_FLOOR_DT 400L
-#define PIVOT_DIST 300
-
 void RangeThread::calibrateLength(uint16_t d){
-    CRGB curLed = ledThread.leds[0];
     int32_t msRemaining = msCalFloor - om::millis();
-    uint8_t brightness = 0xff;
     distCal = expAvg(d, distCal, EATC_2);
     if (msRemaining < 0) {
-        curLed = CRGB(0x44, 0x44, 0xff);
-        notify(NOTIFY_OK, curLed, brightness);
+        notify(NOTIFY_OK);
         distStick = distCal;
-    } else if (msRemaining < CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0xff);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 2*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0xee);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 3*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0xcc);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 4*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0xaa);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 5*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0x88);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 6*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0x44);
-        notify(NOTIFY_BUSY, curLed, brightness);
-    } else if (msRemaining < 7*CAL_FLOOR_DT) {
-        curLed = CRGB(0x0, 0x0, 0x22);
-        notify(NOTIFY_BUSY, curLed, brightness);
     } else {
-        curLed = CRGB(0x0, 0x0, 0x11);
-        notify(NOTIFY_BUSY, curLed, brightness);
+        notify(NOTIFY_BUSY);
     }
 }
 
 void RangeThread::sweep(uint16_t d){
-    CRGB curLed = ledThread.leds[0];
-    uint8_t blue = 0x33;
-    bool distInc = eaDistFast > eaDistSlow;
-    uint16_t brightness = 0xff;
 
-    if (d > distStick || distInc) { 
-        phase = (loops + 1) % STEP_LOOPS;
-        brightness = 0x33;
-        curLed = CRGB(0,0,blue);
-    } else if (d > distStick*0.5) {
-        if (loops % STEP_LOOPS == phase) {
-            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
-        }
-        curLed = CRGB(0xff,0,blue);
+    if (d > distStick) {
+        notify(NOTIFY_SWEEP);
+    } else if (eaDistFast - eaDistSlow < -50) {
+        notify(NOTIFY_INCOMING);
     } else {
-        brightness = (loops % SLOWFLASH) < SLOWFLASH/2 ? 32 : 255;
-        notify(NOTIFY_CLOSEST, curLed, brightness);
-        curLed = CRGB(0xff,0,blue);
-    }
-
-    ledThread.brightness = brightness;
-    if (curLed != ledThread.leds[0]) {
-        ledThread.leds[0] = curLed;
-        ledThread.show(SHOWLED_FADE85);
+        notify(NOTIFY_TOUCHING);
     }
 }
 
 void RangeThread::selftest(uint16_t d){
-    CRGB curLed = ledThread.leds[0];
     bool okRange = d == 65535 ? false : true;
     bool okAccel = -90 < pitch && pitch < 90;
-    uint8_t brightness = 0xff;
-
 
     if (okRange && okAccel) {
-        curLed = CRGB(0, 0xff, 0);
-        notify(NOTIFY_OK, curLed, brightness);
+        notify(NOTIFY_OK);
     } else {
         if (!okRange) {
-            curLed = CRGB(0xff, 0, 0);
+            notify(NOTIFY_ERANGE);
         } else if (!okAccel) {
-            curLed = CRGB(0xff, 0xff, 0);
+            notify(NOTIFY_EACCEL);
         }
-        notify(NOTIFY_ERROR, curLed, brightness);
     }
 }
 
@@ -218,8 +199,6 @@ void RangeThread::setMode(ModeType mode, bool force) {
     }
 
     uint32_t msNow = om::millis();
-
-    loopsNotify = loops;
 
     switch (mode) {
     case MODE_SELFTEST:
@@ -333,8 +312,7 @@ void RangeThread::loop() {
     } else if (mode == MODE_CALIBRATE) {
         calibrateLength(d);
     } else if (mode == MODE_SLEEP) {
-        CRGB led = CRGB(0xff,0xff,0xff);
-        notify(NOTIFY_SLEEP, led,(uint8_t) 0xff);
+        notify(NOTIFY_SLEEP);
     } else {
         om::print("UNKNOWN MODE");
         om::print((uint8_t) mode);

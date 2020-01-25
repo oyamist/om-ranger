@@ -21,9 +21,11 @@ typedef enum NotifyType {
     NOTIFY_SLEEP = 0,     // Sleeping
     NOTIFY_BUSY = 1,      // Action in progress
     NOTIFY_OK = 2,        // Action completed successfully
-    NOTIFY_ERROR = 3,     // Action failed
-    NOTIFY_CLOSEST = 4,   // Contact imminent
-    NOTIFY_INRANGE = 5,   // Within range
+    NOTIFY_TOUCHING = 3,  // Within distStick range
+    NOTIFY_INCOMING = 4,  // Rapidly closing, within distStick range
+    NOTIFY_SWEEP = 5,     // Sweeping for contact
+    NOTIFY_ERANGE = 6,     // Ranging error
+    NOTIFY_EACCEL = 7,     // Accelerometer error
 } NotifyType;
 
 typedef enum ModeType {
@@ -54,10 +56,9 @@ protected:
     uint32_t msModeLock = 0;
     uint32_t msUnsteady = 0;
     uint32_t loopsNotify = 0;
-    int32_t distStick = 600;
+    int32_t distStick = 800;
     int32_t distCal = 0;
     int32_t pitch;
-    int32_t phase = 0;
     ModeType mode;
     NotifyType lastNotify = NOTIFY_SLEEP;
     AxisState * px = &accelThread.xState;
@@ -69,7 +70,7 @@ protected:
     void calibrateLength(uint16_t dist);
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
-    void notify(NotifyType value, CRGB &curLed, uint8_t brightness);
+    void notify(NotifyType value);
 } RangeThread;
 
 extern RangeThread rangeThread;

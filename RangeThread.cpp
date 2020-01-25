@@ -17,8 +17,6 @@ using namespace om;
 RangeThread rangeThread;
 VL53L0X distanceSensor; 
 
-#define SLOWFLASH 10
-#define FASTFLASH 5
 #define STEP_CAL_LOOPS 60
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
@@ -32,7 +30,6 @@ VL53L0X distanceSensor;
 #define SLEEP_DIST 50
 #define MS_INTERMEASUREMENT 1
 #define CAL_FLOOR_DT 400L
-#define PIVOT_DIST 300
 
 
 char * modeStr[] = {
@@ -76,9 +73,6 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
 void RangeThread::notify(NotifyType value) {
     if (lastNotify != value) {
         loopsNotify = loops;
-        om::print("notify: ");
-        om::print(notifyStr[(uint8_t)value]);
-        om::println();
     }
     uint16_t diffLoops = loops - loopsNotify;
     uint16_t mod16 = diffLoops % 16;
@@ -169,19 +163,17 @@ void RangeThread::calibrateLength(uint16_t d){
 }
 
 void RangeThread::sweep(uint16_t d){
-
     if (d > distStick) {
         notify(NOTIFY_SWEEP);
-    } else if (eaDistFast - eaDistSlow < -50) {
-        notify(NOTIFY_INCOMING);
     } else {
         notify(NOTIFY_TOUCHING);
+        //notify(NOTIFY_INCOMING);
     }
 }
 
 void RangeThread::selftest(uint16_t d){
     bool okRange = d == 65535 ? false : true;
-    bool okAccel = -90 < pitch && pitch < 90;
+    bool okAccel = -90 <= pitch && pitch <= 90;
 
     if (okRange && okAccel) {
         notify(NOTIFY_OK);
@@ -287,6 +279,8 @@ void RangeThread::loop() {
 
     if (loops % 16 == 0) {
         om::print(modeStr[(int8_t) mode]);
+        om::print(" ");
+        om::print(notifyStr[(uint8_t)value]);
         om::print(" d");
         om::print(d);
         om::print(" distStick:");

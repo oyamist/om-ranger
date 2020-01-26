@@ -45,7 +45,7 @@ protected:
     uint16_t msLoop;
     void loop();
     RangeType rng = RNG_UNKNOWN;
-    uint32_t minRange = 120L;
+    uint32_t minRange = 20L;
     uint32_t maxRange = 2000L;
     int32_t eaDistFast = 0;
     int32_t eaDistSlow = 0;
@@ -70,7 +70,7 @@ protected:
     void calibrateLength(uint16_t dist);
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
-    void notify(NotifyType value);
+    void notify(NotifyType value, int8_t level=0);
 } RangeThread;
 
 extern RangeThread rangeThread;

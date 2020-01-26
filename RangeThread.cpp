@@ -70,12 +70,14 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     setMode(MODE_SELFTEST);
 }
 
-void RangeThread::notify(NotifyType value) {
+void RangeThread::notify(NotifyType value, int8_t level) {
     if (lastNotify != value) {
         loopsNotify = loops;
     }
     uint16_t diffLoops = loops - loopsNotify;
     uint16_t mod16 = diffLoops % 16;
+    uint16_t mod24 = diffLoops % 24;
+    uint16_t mod32 = diffLoops % 32;
     uint16_t mod48 = diffLoops % 48;
     uint16_t mod64 = diffLoops % 64;
     int16_t showLed = SHOWLED_FADE85;
@@ -86,8 +88,8 @@ void RangeThread::notify(NotifyType value) {
     case NOTIFY_SWEEP:
         if (mod16 % 0 == 0) {
             lraThread.setEffect(0); 
-            led = CRGB(0,0,0xff);
-            brightness = 0xff;
+            led = CRGB(0,0,0);
+            brightness = 0;
         }
         break;
     case NOTIFY_SLEEP:
@@ -105,10 +107,27 @@ void RangeThread::notify(NotifyType value) {
         }
         break;
     case NOTIFY_TOUCHING:
-        if (mod48 == 0) {
-            lraThread.setEffect(DRV2605_TRANSITION_RAMP_UP_LONG_SMOOTH_1); 
+        if (mod24 == 0) {
+            showLed = SHOWLED_FADE85;
+            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
             led = CRGB(0xff,0xff,0);
             brightness = 0xff;
+        } else if (level == 2 && mod24 % 12 == 0) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+            led = CRGB(0xff,0,0);
+            brightness = 0x80;
+        } else if (level == 3 && mod24 % 8 == 0) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+            led = CRGB(0xff,0,0);
+            brightness = 0x80;
+        } else if (level == 4 && mod24 % 6 == 0) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+            led = CRGB(0xff,0,0);
+            brightness = 0x80;
+        } else if (level == 5 && mod24 % 4 == 0) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+            led = CRGB(0xff,0,0);
+            brightness = 0x80;
         }
         break;
     case NOTIFY_BUSY:
@@ -165,9 +184,16 @@ void RangeThread::calibrateLength(uint16_t d){
 void RangeThread::sweep(uint16_t d){
     if (d > distStick) {
         notify(NOTIFY_SWEEP);
+    } else if (d < distStick*1/5) {
+        notify(NOTIFY_TOUCHING, 5);
+    } else if (d < distStick*2/5) {
+        notify(NOTIFY_TOUCHING, 4);
+    } else if (d < distStick*3/5) {
+        notify(NOTIFY_TOUCHING, 3);
+    } else if (d < distStick*4/5) {
+        notify(NOTIFY_TOUCHING, 2);
     } else {
-        notify(NOTIFY_TOUCHING);
-        //notify(NOTIFY_INCOMING);
+        notify(NOTIFY_TOUCHING, 1);
     }
 }
 
@@ -241,13 +267,14 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
+    if (d < minRange || maxRange < d ) {
+        d = maxRange;
+    }
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
     float err = abs(d - eaDistSlow);
     eaDistErr = expAvg(err, eaDistErr, EATC_6);
-    if (minRange <= d && d <= maxRange) {
-        eaDistFast = expAvg(d, eaDistFast, EATC_0);
-        eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
-    } 
+    eaDistFast = expAvg(d, eaDistFast, EATC_0);
+    eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
     bool flatStill = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
     bool modeLock = om::millis() <= msModeLock;
@@ -280,9 +307,11 @@ void RangeThread::loop() {
     if (loops % 16 == 0) {
         om::print(modeStr[(int8_t) mode]);
         om::print(" ");
-        om::print(notifyStr[(uint8_t)value]);
+        om::print(notifyStr[(uint8_t)lastNotify]);
         om::print(" d");
         om::print(d);
+        om::print(" eaDistSlow:");
+        om::print(eaDistSlow);
         om::print(" distStick:");
         om::print(distStick);
         om::print(" pitch:");
@@ -302,7 +331,7 @@ void RangeThread::loop() {
     if (mode == MODE_SELFTEST) {
         selftest(d);
     } else if (mode == MODE_SWEEP) {
-        sweep(d);
+        sweep(eaDistSlow);
         updateOledPosition();
     } else if (mode == MODE_CALIBRATE) {
         calibrateLength(d);

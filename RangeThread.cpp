@@ -23,7 +23,7 @@ VL53L0X distanceSensor;
 #define STEP_LOOPS 5
 #define MS_MODELOCK 1000 /* For modes with timeouts */
 #define DEG_HORIZONTAL 10
-#define STEADY_IDLE_MS 2000
+#define STEADY_IDLE_MS 500
 #define PITCH_SELFTEST 80
 #define PITCH_CAL -70
 #define STEADY_DIST 35
@@ -179,13 +179,13 @@ void RangeThread::notify(NotifyType value, int8_t level) {
 void RangeThread::calibrateLength(uint16_t d){
     int32_t diffCal = absval(d - eaDistSlow);
     distCal = expAvg(d, distCal, EATC_2);
-    if (diffCal <= CALIBRATION_DELTA);
+    if (diffCal <= CALIBRATION_DELTA) {
         distStick = distCal + CALIBRATION_DELTA;
         msModeLock = 0;
         setMode(MODE_SWEEP);
     } else {
         notify(NOTIFY_BUSY);
-        msModeLock = msNow + MS_MODELOCK;
+        msModeLock = om::millis() + MS_MODELOCK;
     }
 }
 
@@ -272,7 +272,7 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-    if (d < minRange) { // disregard ghost returns from enclosure
+    if (d < minRange && mode == MODE_SWEEP) { // disregard ghost returns from enclosure
         d = maxRange;
     }
     if (maxRange < d) { // reduce average bias
@@ -284,7 +284,8 @@ void RangeThread::loop() {
     eaDistFast = expAvg(d, eaDistFast, EATC_0);
     eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
-    bool flatStill = horizontal && msNow - msUnsteady > STEADY_IDLE_MS;
+    bool still = msNow - msUnsteady > STEADY_IDLE_MS;
+    bool flatStill = horizontal && still;
     bool modeLock = om::millis() <= msModeLock;
     bool testing = mode == MODE_SELFTEST && modeLock;
     bool startTesting = pitch >= PITCH_SELFTEST;
@@ -295,7 +296,7 @@ void RangeThread::loop() {
     // Chose mode of operation
     if (startSleep || sleeping) {
         setMode(MODE_SLEEP, !sleeping);
-        if (flatStill) {
+        if (startSleep || horizontal) {
             msModeLock = om::millis() + MS_MODELOCK;
         }
     } else if (startTesting || testing ) {
@@ -324,6 +325,8 @@ void RangeThread::loop() {
         om::print(distStick);
         om::print(" pitch:");
         om::print(pitch);
+        om::print(" still:");
+        om::print(still ? "Y":"n");
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
             om::print(" "); 
             if (ix == (int) px->heading+2) {

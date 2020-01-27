@@ -21,7 +21,7 @@ VL53L0X distanceSensor;
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
 #define STEP_LOOPS 5
-#define MS_MODELOCK 1000 /* Time to establish calibration*/
+#define MS_MODELOCK 1000 /* For modes with timeouts */
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 2000
 #define PITCH_SELFTEST 80
@@ -30,6 +30,7 @@ VL53L0X distanceSensor;
 #define SLEEP_DIST 50
 #define MS_INTERMEASUREMENT 1
 #define CAL_FLOOR_DT 400L
+#define CALIBRATION_DELTA 30
 
 
 char * modeStr[] = {
@@ -131,10 +132,15 @@ void RangeThread::notify(NotifyType value, int8_t level) {
         }
         break;
     case NOTIFY_BUSY:
-        if (mod16 == 0) {
-            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+        if (mod24 == 0) {
+            showLed = SHOWLED_FADE85;
+            lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
             led = CRGB(0xff,0,0xff);
             brightness = 0xff;
+        } else if (mod24 % 6 == 0) {
+            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
+            led = CRGB(0,0,0xff);
+            brightness = 0x80;
         }
         break;
     case NOTIFY_OK:
@@ -171,13 +177,15 @@ void RangeThread::notify(NotifyType value, int8_t level) {
 }
 
 void RangeThread::calibrateLength(uint16_t d){
-    int32_t msRemaining = msCalFloor - om::millis();
+    int32_t diffCal = absval(d - eaDistSlow);
     distCal = expAvg(d, distCal, EATC_2);
-    if (msRemaining < 0) {
-        notify(NOTIFY_OK);
-        distStick = distCal;
+    if (diffCal <= CALIBRATION_DELTA);
+        distStick = distCal + CALIBRATION_DELTA;
+        msModeLock = 0;
+        setMode(MODE_SWEEP);
     } else {
         notify(NOTIFY_BUSY);
+        msModeLock = msNow + MS_MODELOCK;
     }
 }
 
@@ -228,12 +236,9 @@ void RangeThread::setMode(ModeType mode, bool force) {
         // so just slow down ranging
         distanceSensor.startContinuous(msLoop*100L); 
         monitor.quiet(true);
-        ledThread.leds[0] = CRGB(0xff, 0xff, 0xff);
-        ledThread.show(SHOWLED_FADE50);
         msModeLock = msNow + MS_MODELOCK;
         break;
     case MODE_CALIBRATE: 
-        msCalFloor = msNow + 8*CAL_FLOOR_DT;
         msModeLock = msNow + MS_MODELOCK;
         break;
     case MODE_SWEEP:
@@ -267,7 +272,10 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-    if (d < minRange || maxRange < d ) {
+    if (d < minRange) { // disregard ghost returns from enclosure
+        d = maxRange;
+    }
+    if (maxRange < d) { // reduce average bias
         d = maxRange;
     }
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
@@ -283,11 +291,11 @@ void RangeThread::loop() {
     bool calibrating = mode == MODE_CALIBRATE && modeLock;
     bool startCalibrating = mode == MODE_SELFTEST && pitch <= PITCH_CAL;
     bool sleeping = mode == MODE_SLEEP && modeLock;
-    bool startSleep = eaDistSleep < SLEEP_DIST && flatStill;
+    bool startSleep = eaDistSleep < SLEEP_DIST;
     // Chose mode of operation
     if (startSleep || sleeping) {
         setMode(MODE_SLEEP, !sleeping);
-        if (startSleep) {
+        if (flatStill) {
             msModeLock = om::millis() + MS_MODELOCK;
         }
     } else if (startTesting || testing ) {

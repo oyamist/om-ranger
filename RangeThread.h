@@ -45,14 +45,13 @@ protected:
     uint16_t msLoop;
     void loop();
     RangeType rng = RNG_UNKNOWN;
-    uint32_t minRange = 20L;
-    uint32_t maxRange = 2000L;
-    int32_t eaDistFast = 0;
+    uint32_t minRange = 20L;   // Disregard enclosure ghosts
+    uint32_t maxRange = 2500L; // Max ranging white target indoors + 500
+    int32_t eaDistFast = 0;    
     int32_t eaDistSlow = 0;
     int32_t eaDistSleep = 2000L;
     int32_t eaDistErr = 0; 
     uint32_t msIdle = 0;
-    int32_t msCalFloor = 0;
     uint32_t msModeLock = 0;
     uint32_t msUnsteady = 0;
     uint32_t loopsNotify = 0;

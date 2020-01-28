@@ -113,19 +113,19 @@ void RangeThread::notify(NotifyType value, int8_t level) {
             lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
             led = CRGB(0xff,0xff,0);
             brightness = 0xff;
-        } else if (level == 2 && mod24 % 12 == 0) {
+        } else if (level != 3 && mod24 % 12 == 0) { // 2/4
+            lraThread.setEffect(DRV2605_SHARP_TICK_1); 
+            led = CRGB(0xff,0,0);
+            brightness = 0x80;
+        } else if (level == 3 && mod24 % 8 == 0) {  // 3/4
             lraThread.setEffect(DRV2605_SHARP_TICK_3); 
             led = CRGB(0xff,0,0);
             brightness = 0x80;
-        } else if (level == 3 && mod24 % 8 == 0) {
+        } else if (level == 4 && mod24 % 6 == 0) {  // 4/4
             lraThread.setEffect(DRV2605_SHARP_TICK_3); 
             led = CRGB(0xff,0,0);
             brightness = 0x80;
-        } else if (level == 4 && mod24 % 6 == 0) {
-            lraThread.setEffect(DRV2605_SHARP_TICK_3); 
-            led = CRGB(0xff,0,0);
-            brightness = 0x80;
-        } else if (level == 5 && mod24 % 4 == 0) {
+        } else if (level == 5 && mod24 % 4 == 0) {  // 6/8
             lraThread.setEffect(DRV2605_SHARP_TICK_3); 
             led = CRGB(0xff,0,0);
             brightness = 0x80;
@@ -220,14 +220,19 @@ void RangeThread::selftest(uint16_t d){
     }
 }
 
-void RangeThread::setMode(ModeType mode, bool force) {
-    if (this->mode == mode && !force) {
+void RangeThread::setMode(ModeType newMode, bool force) {
+    if (mode == newMode && !force) {
         return;
+    }
+
+    if (mode != newMode && mode == MODE_SLEEP) {
+        monitor.quiet(false);
+        distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
     }
 
     uint32_t msNow = om::millis();
 
-    switch (mode) {
+    switch (newMode) {
     case MODE_SELFTEST:
         msModeLock = msNow + MS_MODELOCK;
         break;
@@ -242,14 +247,9 @@ void RangeThread::setMode(ModeType mode, bool force) {
         msModeLock = msNow + MS_MODELOCK;
         break;
     case MODE_SWEEP:
-        if (this->mode == MODE_SLEEP) {
-            msIdle = msNow;
-            monitor.quiet(false);
-            distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
-        }
         break;
     }
-    this->mode = mode;
+    mode = newMode;
 }
 
 void RangeThread::updateOledPosition() {
@@ -287,25 +287,28 @@ void RangeThread::loop() {
     bool still = msNow - msUnsteady > STEADY_IDLE_MS;
     bool flatStill = horizontal && still;
     bool modeLock = om::millis() <= msModeLock;
-    bool testing = mode == MODE_SELFTEST && modeLock;
+    bool testing = mode == SELFTEST;
+    bool lockSelftest = testing && modeLock;
     bool startTesting = pitch >= PITCH_SELFTEST;
-    bool calibrating = mode == MODE_CALIBRATE && modeLock;
-    bool startCalibrating = mode == MODE_SELFTEST && pitch <= PITCH_CAL;
-    bool sleeping = mode == MODE_SLEEP && modeLock;
+    bool lockCalibrate = mode == MODE_CALIBRATE && modeLock;
+    bool startCalibrating = testing && pitch <= PITCH_CAL;
+    bool sleeping = mode == MODE_SLEEP;
+    bool sleepLock = mode == MODE_SLEEP && modeLock;
     bool startSleep = eaDistSleep < SLEEP_DIST;
+
     // Chose mode of operation
-    if (startSleep || sleeping) {
-        setMode(MODE_SLEEP, !sleeping);
+    if (startSleep || sleeping && (horizontal || modeLock)) {
+        setMode(MODE_SLEEP);
         if (startSleep || horizontal) {
             msModeLock = om::millis() + MS_MODELOCK;
         }
-    } else if (startTesting || testing ) {
-        setMode(MODE_SELFTEST, !testing);
+    } else if (startTesting || lockSelftest ) {
+        setMode(MODE_SELFTEST, !lockSelftest);
         if (startTesting) {
             msModeLock = om::millis() + MS_MODELOCK;
         }
-    } else if (startCalibrating || calibrating) {
-        setMode(MODE_CALIBRATE, !calibrating);
+    } else if (startCalibrating || lockCalibrate) {
+        setMode(MODE_CALIBRATE, !lockCalibrate);
         if (pitch < PITCH_CAL) {
             msModeLock = om::millis() + MS_MODELOCK;
         }

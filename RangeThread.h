@@ -51,7 +51,6 @@ protected:
     int32_t eaDistSlow = 0;
     int32_t eaDistSleep = 2000L;
     int32_t eaDistErr = 0; 
-    uint32_t msIdle = 0;
     uint32_t msModeLock = 0;
     uint32_t msUnsteady = 0;
     uint32_t loopsNotify = 0;

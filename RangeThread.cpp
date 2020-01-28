@@ -106,7 +106,7 @@ void RangeThread::notify(NotifyType value, int8_t level) {
             led = CRGB(0x0,0xff,0xff);
             brightness = 0xaa;
         } else if (loops - loopsNotify == 3) {
-            led = CRGB(0,0xff,0);
+            led = CRGB(0,0xff,0  );
             brightness = 0x66;
         } else if (loops - loopsNotify == 4) {
             led = CRGB(0,0x0,0xff);
@@ -285,7 +285,7 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-    if (d < minRange && mode == MODE_SWEEP) { // disregard ghost returns from enclosure
+    if (d < minRange) { // disregard ghost returns from enclosure
         d = maxRange;
     }
     if (maxRange < d) { // reduce average bias

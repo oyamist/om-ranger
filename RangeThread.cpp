@@ -94,10 +94,23 @@ void RangeThread::notify(NotifyType value, int8_t level) {
         }
         break;
     case NOTIFY_SLEEP:
+        showLed = SHOWLED_FADE50;
         if (loopsNotify == loops) {
             lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
             led = CRGB(0xff,0xff,0xff);
             brightness = 0xff;
+        } else if (loops - loopsNotify == 1) {
+            led = CRGB(0xff,0x0,0xff);
+            brightness = 0xff;
+        } else if (loops - loopsNotify == 2) {
+            led = CRGB(0x0,0xff,0xff);
+            brightness = 0xaa;
+        } else if (loops - loopsNotify == 3) {
+            led = CRGB(0,0xff,0);
+            brightness = 0x66;
+        } else if (loops - loopsNotify == 4) {
+            led = CRGB(0,0x0,0xff);
+            brightness = 0x66;
         }
         break;
     case NOTIFY_INCOMING:
@@ -287,13 +300,13 @@ void RangeThread::loop() {
     bool still = msNow - msUnsteady > STEADY_IDLE_MS;
     bool flatStill = horizontal && still;
     bool modeLock = om::millis() <= msModeLock;
-    bool testing = mode == SELFTEST;
+    bool testing = mode == MODE_SELFTEST;
     bool lockSelftest = testing && modeLock;
     bool startTesting = pitch >= PITCH_SELFTEST;
     bool lockCalibrate = mode == MODE_CALIBRATE && modeLock;
     bool startCalibrating = testing && pitch <= PITCH_CAL;
     bool sleeping = mode == MODE_SLEEP;
-    bool sleepLock = mode == MODE_SLEEP && modeLock;
+    bool sleepLock = sleeping && modeLock;
     bool startSleep = eaDistSleep < SLEEP_DIST;
 
     // Chose mode of operation

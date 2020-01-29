@@ -9,6 +9,8 @@ to detect near objects.
 Tactile feedback on the range of detected objects is provided by
 a Linear Resonant Actuator (LRA) haptic device.
 
+[See video](https://youtu.be/uYHzJQGOatI)
+
 The SightSabre uses [TinyCircuits](https://tinycircuits.com) hardware
 and is implemented with the [[OMilli]] multi-threaded operating system
 for microcontrollers.

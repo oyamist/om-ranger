@@ -27,7 +27,7 @@ for microcontrollers.
 * [TinyCircuits Wireling Cables: 2x50mm and 1x100mm](https://tinycircuits.com/products/5-pin-extension-cable)
 * [TinyCircuits Micro USB Cable](https://tinycircuits.com/products/micro-usb-cable-3-feet)
 * 3D-printed parts [top](https://github.com/oyamist/om-ranger/blob/master/3dp/cubify/case-top.stl) [bottom](https://github.com/oyamist/om-ranger/blob/master/3dp/cubify/case-bot.stl) [front](https://github.com/oyamist/om-ranger/blob/master/3dp/cubify/case-front.stl) [switch](https://github.com/oyamist/om-ranger/blob/master/3dp/cubify/switch.stl)
-* Zip-ties (2 small and 2 large)
+* Zip-ties (2 small and 1 large)
 * a screw
 
 ### Important!

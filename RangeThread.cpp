@@ -126,7 +126,7 @@ void RangeThread::notify(NotifyType value, int8_t level) {
             lraThread.setEffect(DRV2605_STRONG_CLICK_100); 
             led = CRGB(0xff,0xff,0);
             brightness = 0xff;
-        } else if (level != 3 && mod24 % 12 == 0) { // 2/4
+        } else if (level!=1 && level!=3 && mod24 % 12 == 0) { // 2/4
             lraThread.setEffect(DRV2605_SHARP_TICK_1); 
             led = CRGB(0xff,0,0);
             brightness = 0x80;
@@ -335,14 +335,12 @@ void RangeThread::loop() {
         om::print(notifyStr[(uint8_t)lastNotify]);
         om::print(" d");
         om::print(d);
-        om::print(" eaDistSlow:");
-        om::print(eaDistSlow);
+        om::print(" eaDistErr:");
+        om::print(eaDistErr);
         om::print(" distStick:");
         om::print(distStick);
         om::print(" pitch:");
         om::print(pitch);
-        om::print(" still:");
-        om::print(still ? "Y":"n");
         for (int ix = 0; ix < HEADING_COUNT; ix++) {
             om::print(" "); 
             if (ix == (int) px->heading+2) {

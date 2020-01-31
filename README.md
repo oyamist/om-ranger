@@ -1,6 +1,6 @@
 # SightSabre - An Infrared Haptic Ranging Support Wand 
 ### Range haptically with a no-touch infrared light sabre
-<a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg" width=600px/></a>
+<a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg" width=800px/></a>
 
 Support canes used by the blind have a major drawback in that
 they can whack people from behind unintentionally.  This is clearly
@@ -17,7 +17,7 @@ The SightSabre uses [TinyCircuits](https://tinycircuits.com) hardware
 and is implemented with the [[OMilli]] multi-threaded operating system
 for microcontrollers.
 
-<a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg" width=600px/></a>
+<a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg" width=800px/></a>
 
 * [TinyZero MCU](https://tinycircuits.com/products/tinyzero-processor)
 * [TinyCircuits TOF distance sensor Wireling](https://tinycircuits.com/products/tof-distance-sensor-wireling-vl53l0x)

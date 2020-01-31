@@ -27,6 +27,8 @@ for microcontrollers.
 * [TinyCircuits Wireling Cables: 2x50mm and 1x100mm](https://tinycircuits.com/products/5-pin-extension-cable)
 * [TinyCircuits Micro USB Cable](https://tinycircuits.com/products/micro-usb-cable-3-feet)
 * 3D-printed parts
+* Zip-ties (2 small and 2 large)
+* a screw
 
 ### Important!
 

@@ -14,7 +14,7 @@ a Linear Resonant Actuator (LRA) haptic device.
 [See video](https://youtu.be/uYHzJQGOatI)
 
 The SightSabre uses [TinyCircuits](https://tinycircuits.com) hardware
-and is implemented with the [[OMilli]] multi-threaded operating system
+and is implemented with the [OMilli multi-threading library](https://github.com/oyamist/om-ranger/tree/master/src/omilli)
 for microcontrollers.
 
 <a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg" width=800px/></a>

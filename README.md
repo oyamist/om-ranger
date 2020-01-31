@@ -19,9 +19,14 @@ for microcontrollers.
 
 <a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber-parts.jpg" width=800px/></a>
 
-* [TinyZero MCU](https://tinycircuits.com/products/tinyzero-processor)
+* [TinyZero MCU with 3-axis accelerometer](https://tinycircuits.com/products/tinyzero-processor)
 * [TinyCircuits TOF distance sensor Wireling](https://tinycircuits.com/products/tof-distance-sensor-wireling-vl53l0x)
-* [TinyCircuits LRA Driver](https://tinycircuits.com/products/lra-wireling-drv2605)
+* [TinyCircuits LRA Driver Wireling](https://tinycircuits.com/products/lra-wireling-drv2605)
+* [TinyCircuits RGB LED Wireling](https://tinycircuits.com/products/serial-rgb-led-wireling)
+* [TinyCircuits 500mAh LIPO Battery](https://tinycircuits.com/products/lithium-ion-polymer-battery-3-7v-500mah)
+* [TinyCircuits Wireling Cables: 2x50mm and 1x100mm](https://tinycircuits.com/products/5-pin-extension-cable)
+* [TinyCircuits Micro USB Cable](https://tinycircuits.com/products/micro-usb-cable-3-feet)
+* 3D-printed parts
 
 ### Important!
 

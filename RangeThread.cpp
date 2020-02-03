@@ -263,8 +263,7 @@ void RangeThread::setMode(ModeType newMode, bool force) {
 
     switch (newMode) {
     case MODE_STARTUP:
-        msModeLock = msNow + MS_MODELOCK;
-        notify(NOTIFY_STARTUP);
+        msModeLock = msNow + 10*MS_MODELOCK;
         break;
     case MODE_SELFTEST:
         msModeLock = msNow + MS_MODELOCK;
@@ -315,6 +314,9 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
+    if (d < minRange) { 
+      d = maxRange;
+    }
     eaDistFast = expAvg(d, eaDistFast, EATC_0);
     eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     float err = abs(d - eaDistSlow);
@@ -343,7 +345,7 @@ void RangeThread::loop() {
     bool startSleep = false;
 
     // Chose mode of operation
-    if (lockStartingUp) {
+    if (lockStartup) {
         setMode(MODE_STARTUP);
     } else if (startSleep || sleeping && (horizontal || modeLock)) {
         setMode(MODE_SLEEP);

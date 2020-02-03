@@ -17,21 +17,27 @@ using namespace om;
 RangeThread rangeThread;
 VL53L0X distanceSensor; 
 
+#define VERSION "SightSaber 0.0.1"
 #define STEP_CAL_LOOPS 60
 #define STEP_CAL_TC 0.5
 #define STEP_TC 0.5
 #define STEP_LOOPS 5
 #define MS_MODELOCK 1000 /* For modes with timeouts */
+#define MS_MODELOCK_STARTUP 10000
 #define DEG_HORIZONTAL 10
 #define STEADY_IDLE_MS 500
 #define PITCH_SELFTEST 80
-#define PITCH_CAL -70
+#define PITCH_CAL -80
 #define STEADY_DIST 35
 #define SLEEP_DIST 50
 #define MS_INTERMEASUREMENT 1
 #define CAL_FLOOR_DT 400L
 #define CALIBRATION_DELTA 30
 #define MAX_DIST_ERR 50
+#define NOTIFY_STARTUP_DEFAULT 0
+#define NOTIFY_STARTUP_SELFTEST 1
+#define NOTIFY_STARTUP_CALIBRATE 2
+
 
 char * modeStr[] = {
   "STARTUP",
@@ -68,7 +74,6 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setTimeout(500);
     uint32_t msTimingBudget = msLoop-MS_INTERMEASUREMENT;
     distanceSensor.setMeasurementTimingBudget(msTimingBudget*1000);
-    distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
 
     setMode(MODE_STARTUP);
 }
@@ -93,12 +98,20 @@ void RangeThread::notify(NotifyType value, int8_t level) {
             lraThread.setEffect(
                 DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
         }
-        if (pitch > PITCH_SELFTEST) {
-            led = CRGB(0,0xff,0);
-        } else if (pitch < PITCH_CAL) {
-            led = CRGB(0,0,0xff);
-        } else {
+        if (mod16 == 0) {
+            brightness = 0xff;
+        }
+        switch (level) {
+        default:
+        case NOTIFY_STARTUP_DEFAULT:
             led = CRGB(0xff,0xff,0xff);
+            break;
+        case NOTIFY_STARTUP_SELFTEST:
+            led = CRGB(0,0xff,0);
+            break;
+        case NOTIFY_STARTUP_CALIBRATE:
+            led = CRGB(0,0,0xff);
+            break;
         }
         break;
     case NOTIFY_SWEEP:
@@ -254,17 +267,23 @@ void RangeThread::setMode(ModeType newMode, bool force) {
         return;
     }
 
-    if (mode != newMode && mode == MODE_SLEEP) {
-        monitor.quiet(false);
-        distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
+    if (mode != newMode) { // End existing mode
+        switch (mode) {
+        case MODE_SLEEP:
+            monitor.quiet(false);
+            distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
+            break;
+        case MODE_SELFTEST:
+            om:;println(VERSION);
+            break;
+        }
     }
 
     uint32_t msNow = om::millis();
 
-    switch (newMode) {
+    switch (newMode) {  // Begin new mode
     case MODE_STARTUP:
-        msModeLock = msNow + MS_MODELOCK;
-        notify(NOTIFY_STARTUP);
+        msModeLock = msNow + MS_MODELOCK_STARTUP;
         break;
     case MODE_SELFTEST:
         msModeLock = msNow + MS_MODELOCK;
@@ -295,11 +314,11 @@ void RangeThread::updateOledPosition() {
 
 void RangeThread::startup() {
     if (pitch > PITCH_SELFTEST) {
-        notify(NOTIFY_STARTUP, 1);
+        notify(NOTIFY_STARTUP, NOTIFY_STARTUP_SELFTEST);
     } else if (pitch < PITCH_CAL) {
-        notify(NOTIFY_STARTUP, 2);
+        notify(NOTIFY_STARTUP, NOTIFY_STARTUP_CALIBRATE);
     } else {
-        notify(NOTIFY_STARTUP, 0);
+        notify(NOTIFY_STARTUP, NOTIFY_STARTUP_DEFAULT);
     }
 }
 
@@ -315,11 +334,14 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
+    if (d < minRange) {
+        d = maxRange;
+    }
     eaDistFast = expAvg(d, eaDistFast, EATC_0);
     eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
-    float err = abs(d - eaDistSlow);
-    eaDistErr = expAvg(err, eaDistErr, EATC_6);
-    if (eaDistErr > MAX_DIST_ERR) { // disregard ghosts
+    float errFast = abs(d - eaDistFast);
+    float errSlow = abs(d - eaDistSlow);
+    if (errSlow > MAX_DIST_ERR) { // noise possible
         d = maxRange;
     }
     if (maxRange < d) { // reduce average bias
@@ -343,7 +365,7 @@ void RangeThread::loop() {
     bool startSleep = false;
 
     // Chose mode of operation
-    if (lockStartingUp) {
+    if (lockStartup) {
         setMode(MODE_STARTUP);
     } else if (startSleep || sleeping && (horizontal || modeLock)) {
         setMode(MODE_SLEEP);
@@ -370,8 +392,10 @@ void RangeThread::loop() {
         om::print(notifyStr[(uint8_t)lastNotify]);
         om::print(" d");
         om::print(d);
-        om::print(" eaDistErr:");
-        om::print(eaDistErr);
+        om::print(" errFast:");
+        om::print(errFast);
+        om::print(" errSlow:");
+        om::print(errSlow);
         om::print(" distStick:");
         om::print(distStick);
         om::print(" pitch:");

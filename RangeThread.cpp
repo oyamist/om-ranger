@@ -31,17 +31,18 @@ VL53L0X distanceSensor;
 #define MS_INTERMEASUREMENT 1
 #define CAL_FLOOR_DT 400L
 #define CALIBRATION_DELTA 30
-
+#define MAX_DIST_ERR 50
 
 char * modeStr[] = {
-  "SLEEP ",
+  "STARTUP",
   "SLFTST",
   "SWEEP ",
   "CALIB ",
+  "SLEEP ",
 };
 
 char * notifyStr[] = {
-    "SLEEPING",
+    "STARTUP ",
     "BUSY    ",
     "OK      ",
     "TOUCHING",
@@ -49,6 +50,7 @@ char * notifyStr[] = {
     "SWEEPING",
     "ERANGE  ",
     "EACCEL  ",
+    "SLEEPING",
 };
 
 RangeThread::RangeThread() {}
@@ -68,7 +70,7 @@ void RangeThread::setup(uint8_t port, uint16_t msLoop) {
     distanceSensor.setMeasurementTimingBudget(msTimingBudget*1000);
     distanceSensor.startContinuous(MS_INTERMEASUREMENT); // 19mA
 
-    setMode(MODE_SELFTEST);
+    setMode(MODE_STARTUP);
 }
 
 void RangeThread::notify(NotifyType value, int8_t level) {
@@ -86,6 +88,19 @@ void RangeThread::notify(NotifyType value, int8_t level) {
     uint8_t brightness = ledThread.brightness;
     
     switch (value) {
+    case NOTIFY_STARTUP:
+        if (loopsNotify == loops) {
+            lraThread.setEffect(
+                DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
+        }
+        if (pitch > PITCH_SELFTEST) {
+            led = CRGB(0,0xff,0);
+        } else if (pitch < PITCH_CAL) {
+            led = CRGB(0,0,0xff);
+        } else {
+            led = CRGB(0xff,0xff,0xff);
+        }
+        break;
     case NOTIFY_SWEEP:
         if (mod16 % 0 == 0) {
             lraThread.setEffect(0); 
@@ -96,7 +111,8 @@ void RangeThread::notify(NotifyType value, int8_t level) {
     case NOTIFY_SLEEP:
         showLed = SHOWLED_FADE50;
         if (loopsNotify == loops) {
-            lraThread.setEffect(DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
+            lraThread.setEffect(    
+                DRV2605_TRANSITION_RAMP_DOWN_LONG_SMOOTH_1); 
             led = CRGB(0xff,0xff,0xff);
             brightness = 0xff;
         } else if (loops - loopsNotify == 1) {
@@ -246,6 +262,10 @@ void RangeThread::setMode(ModeType newMode, bool force) {
     uint32_t msNow = om::millis();
 
     switch (newMode) {
+    case MODE_STARTUP:
+        msModeLock = msNow + MS_MODELOCK;
+        notify(NOTIFY_STARTUP);
+        break;
     case MODE_SELFTEST:
         msModeLock = msNow + MS_MODELOCK;
         break;
@@ -273,6 +293,16 @@ void RangeThread::updateOledPosition() {
     pz->headingToString(oledThread.lines[4]);
 }
 
+void RangeThread::startup() {
+    if (pitch > PITCH_SELFTEST) {
+        notify(NOTIFY_STARTUP, 1);
+    } else if (pitch < PITCH_CAL) {
+        notify(NOTIFY_STARTUP, 2);
+    } else {
+        notify(NOTIFY_STARTUP, 0);
+    }
+}
+
 void RangeThread::loop() {
     nextLoop.ticks = om::ticks() + MS_TICKS(msLoop);
     om::setI2CPort(port); 
@@ -285,32 +315,37 @@ void RangeThread::loop() {
         pz->heading==HEADING_STEADY;
     if (!steady) { msUnsteady = msNow; }
     uint16_t d = distanceSensor.readRangeContinuousMillimeters();
-    if (d < minRange) { // disregard ghost returns from enclosure
+    eaDistFast = expAvg(d, eaDistFast, EATC_0);
+    eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
+    float err = abs(d - eaDistSlow);
+    eaDistErr = expAvg(err, eaDistErr, EATC_6);
+    if (eaDistErr > MAX_DIST_ERR) { // disregard ghosts
         d = maxRange;
     }
     if (maxRange < d) { // reduce average bias
         d = maxRange;
     }
     bool horizontal = -DEG_HORIZONTAL <= pitch && pitch <= DEG_HORIZONTAL;
-    float err = abs(d - eaDistSlow);
-    eaDistErr = expAvg(err, eaDistErr, EATC_6);
-    eaDistFast = expAvg(d, eaDistFast, EATC_0);
-    eaDistSlow = expAvg(d, eaDistSlow, EATC_4);
     eaDistSleep = expAvg(d, eaDistSleep, EATC_6);
     bool still = msNow - msUnsteady > STEADY_IDLE_MS;
     bool flatStill = horizontal && still;
     bool modeLock = om::millis() <= msModeLock;
+    bool startingUp = mode == MODE_STARTUP;
+    bool lockStartup = startingUp && modeLock;
     bool testing = mode == MODE_SELFTEST;
     bool lockSelftest = testing && modeLock;
-    bool startTesting = pitch >= PITCH_SELFTEST;
+    bool startTesting = startingUp && pitch >= PITCH_SELFTEST;
     bool lockCalibrate = mode == MODE_CALIBRATE && modeLock;
-    bool startCalibrating = testing && pitch <= PITCH_CAL;
+    bool startCalibrating = startingUp && pitch <= PITCH_CAL;
     bool sleeping = mode == MODE_SLEEP;
     bool sleepLock = sleeping && modeLock;
-    bool startSleep = eaDistSleep < SLEEP_DIST;
+    //bool startSleep = eaDistSleep < SLEEP_DIST;
+    bool startSleep = false;
 
     // Chose mode of operation
-    if (startSleep || sleeping && (horizontal || modeLock)) {
+    if (lockStartingUp) {
+        setMode(MODE_STARTUP);
+    } else if (startSleep || sleeping && (horizontal || modeLock)) {
         setMode(MODE_SLEEP);
         if (startSleep || horizontal) {
             msModeLock = om::millis() + MS_MODELOCK;
@@ -353,7 +388,9 @@ void RangeThread::loop() {
         om::println();
     }
 
-    if (mode == MODE_SELFTEST) {
+    if (mode == MODE_STARTUP) {
+        startup();
+    } else if (mode == MODE_SELFTEST) {
         selftest(d);
     } else if (mode == MODE_SWEEP) {
         sweep(eaDistSlow);

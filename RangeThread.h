@@ -18,21 +18,23 @@ typedef enum RangeType {
 } RangeType;
 
 typedef enum NotifyType {
-    NOTIFY_SLEEP = 0,     // Sleeping
+    NOTIFY_STARTUP = 0,   // Power up
     NOTIFY_BUSY = 1,      // Action in progress
     NOTIFY_OK = 2,        // Action completed successfully
     NOTIFY_TOUCHING = 3,  // Within distStick range
     NOTIFY_INCOMING = 4,  // Rapidly closing, within distStick range
     NOTIFY_SWEEP = 5,     // Sweeping for contact
-    NOTIFY_ERANGE = 6,     // Ranging error
-    NOTIFY_EACCEL = 7,     // Accelerometer error
+    NOTIFY_ERANGE = 6,    // Ranging error
+    NOTIFY_EACCEL = 7,    // Accelerometer error
+    NOTIFY_SLEEP = 8,
 } NotifyType;
 
 typedef enum ModeType {
-    MODE_SLEEP = 0,     // Inactive
+    MODE_STARTUP = 0,   // Power up
     MODE_SELFTEST = 1,  // Triggered by startup
     MODE_SWEEP = 2,     // Sweep for objects in range
     MODE_CALIBRATE = 3, // Calibrate floor height
+    MODE_SLEEP = 4,     // Inactive
 } ModeType;
 
 typedef class RangeThread : om::Thread {
@@ -66,6 +68,7 @@ protected:
     void sweep(uint16_t dist);
     void selftest(uint16_t d);
     void calibrateLength(uint16_t dist);
+    void startup();
     void setMode(ModeType mode, bool force=false);
     void updateOledPosition();
     void notify(NotifyType value, int8_t level=0);

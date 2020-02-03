@@ -35,10 +35,10 @@ void LEDThread::setup(uint8_t port, uint16_t msLoop) {
     default: FastLED.addLeds<WS2812, A0, GRB>(leds, NUM_LEDS); break;
     }
 
-    // Flash slow white on startup
+    // Start dark
     FastLED.setBrightness(brightness);
     for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i] = CRGB(128,128,128);
+        leds[i] = CRGB(0,0,0);
     }
     msPeriod = 150; // LED frame rate 
 

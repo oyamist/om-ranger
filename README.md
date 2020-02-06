@@ -4,7 +4,7 @@
 -----
 
 -----
-# NOTE: THIS REPOSITORY IS DEPRECTED
+# NOTE: THIS REPOSITORY IS DEPRECATED
 # NOTE: Please go here => [tiny-kits/sight-saber](https://github.com/tiny-kits/sight-saber)
 
 -----

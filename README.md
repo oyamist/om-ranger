@@ -1,3 +1,5 @@
+# NOTE: REPOSITORY MOVED to [tiny-kits/sight-saber](https://github.com/tiny-kits/sight-saber)
+
 # SightSabre - An Infrared Haptic Ranging Support Wand 
 ### Range haptically with a no-touch infrared light sabre
 <a href="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg"><img src="https://raw.githubusercontent.com/oyamist/om-ranger/master/assets/sight-saber.jpg" width=800px/></a>
